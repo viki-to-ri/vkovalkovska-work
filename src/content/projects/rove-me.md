@@ -3,6 +3,9 @@ title: "rove.me"
 order: 3
 year: "2019–20"
 subline: "Sole designer · visitors ↑23% · bookings ↑14%"
+cover: "./covers/roveme.webp"
+coverAlt: >-
+  The rove.me homepage: a month-by-month seasonality timeline scrubbed to a ten-day trip in March, above destination cards ranked by experience and weather score.
 standfirst: >-
   Sole designer on a travel guide built around timing, running small, cheap
   experiments to make its content and features findable.

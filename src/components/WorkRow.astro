@@ -61,6 +61,9 @@ const href = gated
 	.row:hover,
 	.row:focus-visible {
 		background: var(--lilac);
+		/* Lift the hovered row so the cover, which is taller than the row, is not
+		   sliced by the next row's 2px rule. */
+		z-index: 1;
 	}
 
 	.idx {
@@ -96,10 +99,13 @@ const href = gated
 		white-space: nowrap;
 	}
 
-	/* The cover reveal, identical on hover and keyboard focus. */
+	/* The cover reveal, identical on hover and keyboard focus.
+	   Spec §5 gives right: 96px, but at the resolved --gutter the year column
+	   reaches ~111px in from the row edge, so 96px sits on top of the year.
+	   132px keeps the cover inboard of the year, which is the spec's intent. */
 	.peek {
 		position: absolute;
-		right: 96px;
+		right: 132px;
 		top: 50%;
 		width: 190px;
 		aspect-ratio: 3 / 2;

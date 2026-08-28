@@ -3,6 +3,9 @@ title: "iHeartMedia PodGuides"
 order: 4
 year: "2021"
 subline: "0→1 concept · travel discovery via podcasts"
+cover: "./covers/podguides.webp"
+coverAlt: >-
+  Two PodGuides collection screens, Best Outdoor Getaways and Mexico Ultimate Guide, each showing an episode count and a swipeable row of podcast episodes with a docked player at the bottom.
 standfirst: >-
   A 0→1 concept and MVP testing whether curated, place-specific podcasts could be
   a real way to start planning a trip. Built with iHeartMedia's research team.
