@@ -1,0 +1,43 @@
+---
+/**
+ * The site mark. Blinks on a 5.5s loop — whimsy move 1 of 3.
+ * Purely decorative glyphs, so it is hidden from assistive tech; when it is
+ * rendered as a link the caller supplies the accessible name.
+ */
+interface Props {
+	/** Render as a link to the home page. */
+	href?: string;
+	/** Accessible name, used only when `href` is set. */
+	label?: string;
+}
+
+const { href, label = "Home" } = Astro.props;
+const Tag = href ? "a" : "span";
+---
+
+<Tag class="mark" {...href ? { href } : {}}>
+	{href && <span class="sr-only">{label}</span>}
+	<span class="glyph" aria-hidden="true">(-˘‿˘-)</span>
+</Tag>
+
+<style>
+	.mark {
+		font-family: var(--font-mono);
+		font-size: 14px;
+		color: var(--blue);
+		text-decoration: none;
+		white-space: nowrap;
+	}
+
+	.glyph {
+		display: inline-block;
+		transform-origin: center;
+		animation: blink 5.5s infinite;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.glyph {
+			animation: none;
+		}
+	}
+</style>

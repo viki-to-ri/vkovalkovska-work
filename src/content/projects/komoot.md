@@ -1,46 +1,49 @@
 ---
 title: "komoot"
-description: "Enhancing user acquisition, activation, and user experience for a route-planning app"
-role: "Product Designer, Growth"
-pubDate: "2024-06-01"
-endDate: "2025-09-01"
-tools: ["Figma", "Dovetail"]
 order: 1
+year: "2024–25"
+subline: "Growth · signup ↑1.96× · activation ↑2.04×"
+standfirst: >-
+  Growth design on the web journey that turns a first-time visitor into an active
+  route planner — where the research kept arguing with the growth playbook.
+role: "Product designer, growth squad"
+when: "Jun 2024 – Sep 2025"
+tools: "Figma, Dovetail"
+figures:
+  - value: "1.96×"
+    caption: "Signup rate"
+  - value: "2.04×"
+    caption: "Activation rate"
+  - value: "18–20%"
+    caption: "Of all signups"
+ledger:
+  - label: "CONTEXT"
+    body: >-
+      komoot is a route planner built to recommend a good route for any outdoor activity,
+      anywhere — 22 million active users by 2025. My squad owned every landing page and the
+      whole web journey, from a visitor's first click through to activation.
+  - label: "GOAL"
+    body: >-
+      Grow visitors, signups and activated users, with activation defined as reaching
+      seven-day explorer status. Working alongside data science and the wider growth team,
+      through analytics, user research and A/B testing rather than opinion.
+  - label: "WHAT I DID"
+    body: >-
+      Led the user research · owned design iterations and prototyping · shipped experiments
+      with engineers and analysts · contributed to the shared design system and research
+      practice. I concentrated on guide pages, the highest-traffic content type on the site
+      and the source of nearly **60% of web signups** in a single month.
+  - label: "HARD PART"
+    body: >-
+      The research kept contradicting the growth playbook. Signup pop-ups looked fine in the
+      funnel but frustrated most people in testing, and a surprising number never realised an
+      account was free. What they actually used to judge a route was photos, star ratings and
+      route stats. So the work became making the page more useful rather than more insistent —
+      a harder case to argue, and the one the numbers ended up supporting.
+  - label: "OUTCOME"
+    highlight: true
+    body: >-
+      Clearer communication of route limits · a rebuilt mobile navigation menu · every change
+      validated before it rolled out. Guide pages went on to drive 18–20% of all komoot signups,
+      with signup rate up **1.96×** and activation up **2.04×** year over year.
 ---
-
-## Context
-
-komoot is a route planner built to recommend tailored routes for any outdoor activity, anywhere. By 2025 it counted 22 million active users who rely on it to find, plan, share, and track their adventures.
-
-## Goal
-
-The growth squad owned every landing page and the full web journey from a visitor's first click through activation — defined as reaching "7-day explorer" status. The mandate was to grow visitors, signups, and activated users, working hand in hand with data science and other growth teams and leaning on analytics, user research, and A/B testing to get there.
-
-## My Role
-
-As the Product Designer on the squad, I led user research, owned design iterations and prototyping, worked closely with engineers and analysts to ship experiments, and contributed to the team's shared design system and research practices.
-
-## Deep dive: guide pages
-
-Guide pages were the highest-traffic content type on the site, responsible for nearly 60% of all web signups in a single month. That made them the highest-leverage place to focus.
-
-Research surfaced a handful of clear opportunities:
-
-- Users found the content useful, even where it had been lightly edited
-- Mobile navigation was hard to use
-- Signup pop-ups frustrated most visitors
-- Many people didn't realize an account was free to create
-- Photos got the most attention when people were assessing a route
-- Star ratings and stats built credibility
-
-Based on those findings, we:
-
-- Clarified how route limitations were communicated on destination pages
-- Reworked the mobile navigation menu
-- Tested each change to confirm it actually helped before rolling it out further
-
-## Results
-
-- Guide pages drove 18–20% of all komoot signups
-- Signup rate improved 1.96x year-over-year
-- Activation rate improved 2.04x year-over-year

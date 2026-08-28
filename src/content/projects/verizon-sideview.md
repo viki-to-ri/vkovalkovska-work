@@ -1,38 +1,44 @@
 ---
 title: "Verizon Sideview"
-description: "Leading the 0→1 design of a native cross-platform app for sales and support teams"
-role: "Sole Product Designer"
-pubDate: "2020-09-01"
-endDate: "2021-05-01"
-tools: ["Sketch", "InVision"]
-link: "https://www.verizon.com/support/one-talk-side-view-user-guide/"
 order: 2
+year: "2020–21"
+subline: "0→1 · shipped to four platforms"
+standfirst: >-
+  A native app that gives sales and support teams one view of contact and account
+  data during a live call, designed 0→1 and shipped to four platforms at once.
+role: "Sole product designer"
+when: "Sep 2020 – May 2021"
+tools: "Sketch, InVision"
+links:
+  - label: "User guide"
+    href: "https://www.verizon.com/support/one-talk-side-view-user-guide/"
+  - label: "App Store"
+    href: "https://apps.apple.com/au/app/verizon-side-view/id1559972869"
+ledger:
+  - label: "CONTEXT"
+    body: >-
+      Sales and support reps were juggling several tools mid-call just to pull up contact and
+      account details — a fragmented workflow adding cognitive load at exactly the moment they
+      could least afford it.
+  - label: "GOAL"
+    body: >-
+      Build the first version of a unified app: one place to see relevant CRM and account data,
+      log what happened, and schedule the follow-up — native on iOS, Android, macOS and Windows.
+  - label: "WHAT I DID"
+    body: >-
+      Sole designer, end to end. Ran co-creation sessions with engineering and stakeholders ·
+      mapped the call workflows so everyone was arguing about the same thing · designed low- and
+      high-fidelity prototypes · ran internal testing · supported handoff and implementation on
+      all four platforms.
+  - label: "HARD PART"
+    body: >-
+      Four platforms with their own conventions, very little direct access to end users, and
+      stakeholders whose priorities did not agree. Workflow maps and frequent feedback sessions
+      became the substitute for user access — they surfaced disagreement early, while it was
+      still cheap. I diverged per OS only where a shared pattern would have felt foreign.
+  - label: "OUTCOME"
+    highlight: true
+    body: >-
+      Shipped the first version across iOS, Android, macOS and Windows. The product team took it
+      from there to start collecting real user feedback and shape the next iteration.
 ---
-
-## Context
-
-Sales and support reps were juggling multiple tools mid-call just to pull up contact and account data — a fragmented workflow that added cognitive load exactly when they needed to move fast.
-
-## Goal
-
-Build the first version of a unified app that gives reps one place to see relevant CRM and account data, log activity, and schedule follow-ups — across iOS, Android, macOS, and Windows.
-
-## My Role
-
-I led the design end-to-end as the sole product designer: running co-creation sessions with engineering and stakeholders, designing low- and high-fidelity prototypes, running internal testing, and supporting the handoff and implementation on every platform.
-
-## Challenges
-
-- Four platforms, each with its own technical constraints and UI conventions
-- Limited direct access to end users
-- Multiple stakeholders with different, sometimes competing priorities
-
-## Process
-
-I optimized for clarity and collaboration: frequent co-creation and feedback sessions, workflow maps to keep everyone aligned, fast iteration through prototypes, and just enough platform-specific adaptation to feel native on each OS while staying visually consistent.
-
-## Outcome
-
-We shipped the first version of the app across iOS, Android, macOS, and Windows, and handed it to the product team to start collecting real user feedback for the next round of iteration.
-
-**Links:** [User guide](https://www.verizon.com/support/one-talk-side-view-user-guide/) · [App Store listing](https://apps.apple.com/au/app/verizon-side-view/id1559972869)

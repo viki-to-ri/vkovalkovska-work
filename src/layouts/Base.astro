@@ -1,0 +1,63 @@
+---
+import "../styles/global.css";
+import SiteFooter from "../components/SiteFooter.astro";
+import { SITE_TITLE, SITE_DESCRIPTION } from "../lib/site";
+
+interface Props {
+	title?: string;
+	description?: string;
+	/** Apply the page-load reveal to the footer. */
+	revealFooter?: boolean;
+}
+
+const { title, description = SITE_DESCRIPTION, revealFooter = false } = Astro.props;
+
+const pageTitle = title ? `${title} — ${SITE_TITLE}` : `${SITE_TITLE} — ${SITE_DESCRIPTION.split(".")[0]}`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+
+		<link rel="canonical" href={canonical} />
+		<title>{pageTitle}</title>
+		<meta name="description" content={description} />
+
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={canonical} />
+		<meta property="og:title" content={pageTitle} />
+		<meta property="og:description" content={description} />
+		<meta property="og:site_name" content={SITE_TITLE} />
+		<meta name="twitter:card" content="summary" />
+		<meta name="twitter:title" content={pageTitle} />
+		<meta name="twitter:description" content={description} />
+
+		<link
+			rel="preload"
+			href="/fonts/space-grotesk-latin.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+		<link
+			rel="preload"
+			href="/fonts/space-mono-latin-400.woff2"
+			as="font"
+			type="font/woff2"
+			crossorigin
+		/>
+	</head>
+
+	<body>
+		<a class="skip-link" href="#main">Skip to content</a>
+		<div class="page">
+			<slot />
+			<SiteFooter reveal={revealFooter} />
+		</div>
+	</body>
+</html>
