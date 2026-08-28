@@ -238,8 +238,12 @@ b {
 	}
 }
 
+/* `backwards`, not `both`: the `to` state already equals the element's natural
+   style, and `forwards` would leave a transform matrix behind permanently —
+   which creates a stacking context and traps the work-row cover reveal beneath
+   the following row's rule. */
 .reveal {
-	animation: reveal 0.4s var(--ease) both;
+	animation: reveal 0.4s var(--ease) backwards;
 }
 
 /* The ASCII mark blinks. This is the whole personality; it should never be removed. */

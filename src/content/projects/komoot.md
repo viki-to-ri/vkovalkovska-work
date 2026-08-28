@@ -3,6 +3,9 @@ title: "komoot"
 order: 1
 year: "2024–25"
 subline: "Growth · signup ↑1.96× · activation ↑2.04×"
+cover: "./covers/komoot.webp"
+coverAlt: >-
+  The komoot Discover feed on mobile: a recommended hiking tour showing duration, distance and average speed above a map of the route, beside a Find your next adventure call to action.
 standfirst: >-
   Growth design on the web journey that turns a first-time visitor into an active
   route planner — where the research kept arguing with the growth playbook.

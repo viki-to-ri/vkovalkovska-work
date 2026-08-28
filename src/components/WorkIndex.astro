@@ -50,9 +50,10 @@ const count = String(projects.length).padStart(2, "0");
 		   Adding a border-bottom here would stack two 2px rules into a 4px one. */
 	}
 
-	/* Page-load reveal, staggered 40ms apart. CSS-only, runs once. */
+	/* Page-load reveal, staggered 40ms apart. CSS-only, runs once.
+	   `backwards` so no transform matrix lingers — see the note in global.css. */
 	.rows li {
-		animation: reveal 0.4s var(--ease) both;
+		animation: reveal 0.4s var(--ease) backwards;
 	}
 	.rows li:nth-child(1) {
 		animation-delay: 140ms;

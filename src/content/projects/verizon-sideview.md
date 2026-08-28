@@ -3,6 +3,9 @@ title: "Verizon Sideview"
 order: 2
 year: "2020–21"
 subline: "0→1 · shipped to four platforms"
+cover: "./covers/verizon.webp"
+coverAlt: >-
+  Sideview on iOS: a contact record showing a lead's company, title, phone and email above a merged timeline of emails, calendar events and Salesforce tasks, next to a lead-details tab splitting upcoming and recent activity.
 standfirst: >-
   A native app that gives sales and support teams one view of contact and account
   data during a live call, designed 0→1 and shipped to four platforms at once.
