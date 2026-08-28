@@ -1,0 +1,79 @@
+---
+interface Props {
+	role: string;
+	when: string;
+	tools: string;
+}
+
+const { role, when, tools } = Astro.props;
+
+const cells = [
+	{ label: "Role", value: role },
+	{ label: "When", value: when },
+	{ label: "Tools", value: tools },
+];
+---
+
+<dl class="meta">
+	{
+		cells.map(({ label, value }) => (
+			<div class="cell">
+				<dt class="label">{label}</dt>
+				<dd class="value">{value}</dd>
+			</div>
+		))
+	}
+</dl>
+
+<style>
+	/* Three equal cells; the 2px ink ground shows through the gaps as rules. */
+	.meta {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 2px;
+		margin: 0;
+		background: var(--ink);
+		border-top: var(--rule);
+		border-bottom: var(--rule);
+	}
+
+	.cell {
+		background: var(--paper);
+		padding: 14px 20px;
+	}
+
+	/* Keep the strip flush with the page gutter at both ends. */
+	.cell:first-child {
+		padding-left: var(--gutter);
+	}
+	.cell:last-child {
+		padding-right: var(--gutter);
+	}
+
+	.label {
+		font-size: 9.5px;
+		color: var(--ink-label);
+	}
+
+	.value {
+		margin: 3px 0 0;
+		font-size: 13px;
+		line-height: 1.45;
+	}
+
+	@media (max-width: 640px) {
+		.meta {
+			grid-template-columns: 1fr;
+			gap: 0;
+			background: transparent;
+		}
+
+		.cell {
+			padding: 12px var(--gutter);
+		}
+
+		.cell + .cell {
+			border-top: var(--rule-hair);
+		}
+	}
+</style>

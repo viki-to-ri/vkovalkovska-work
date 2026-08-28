@@ -1,0 +1,44 @@
+---
+import { EMAIL } from "../lib/site";
+
+interface Props {
+	reveal?: boolean;
+}
+
+const { reveal = false } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<footer class:list={["site-footer", reveal && "reveal"]}>
+	<p class="contact">
+		Interested to work together? <a href={`mailto:${EMAIL}`}>Reach out</a>
+	</p>
+	<p class="num copyright">© {year}</p>
+</footer>
+
+<style>
+	.site-footer {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 16px;
+		flex-wrap: wrap;
+		padding: 22px var(--gutter) 34px;
+		border-top: var(--rule);
+	}
+
+	.contact {
+		font-size: 15px;
+	}
+
+	.contact a {
+		color: var(--blue);
+		text-decoration: none;
+		border-bottom: 2px solid var(--blue);
+		padding-bottom: 1px;
+	}
+
+	.copyright {
+		color: var(--ink-label);
+	}
+</style>

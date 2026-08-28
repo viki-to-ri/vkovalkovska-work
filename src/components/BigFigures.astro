@@ -1,0 +1,42 @@
+---
+interface Props {
+	figures: { value: string; caption: string }[];
+}
+
+const { figures } = Astro.props;
+---
+
+<dl class="figures">
+	{
+		figures.map(({ value, caption }) => (
+			<div class="figure">
+				<dt class="value">{value}</dt>
+				<dd class="caption label">{caption}</dd>
+			</div>
+		))
+	}
+</dl>
+
+<style>
+	.figures {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 34px;
+		margin: 0;
+		padding: 26px var(--gutter);
+		border-top: var(--rule);
+	}
+
+	.value {
+		font-size: clamp(26px, 4vw, 34px);
+		font-weight: 500;
+		line-height: 1.1;
+		color: var(--blue);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.caption {
+		margin: 6px 0 0;
+		color: var(--ink-label);
+	}
+</style>

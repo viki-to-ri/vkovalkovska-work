@@ -1,0 +1,56 @@
+---
+import AsciiMark from "./AsciiMark.astro";
+import { EMAIL, LINKEDIN } from "../lib/site";
+
+interface Props {
+	/** Suppress the home link when already on the home page. */
+	home?: boolean;
+	/** Apply the page-load reveal. */
+	reveal?: boolean;
+}
+
+const { home = false, reveal = false } = Astro.props;
+---
+
+<header class:list={["site-header", reveal && "reveal"]}>
+	<AsciiMark href={home ? undefined : "/"} />
+	<nav aria-label="Primary">
+		<a href="/about">About</a>
+		<span aria-hidden="true">·</span>
+		<a href={LINKEDIN} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+		<span aria-hidden="true">·</span>
+		<a href={`mailto:${EMAIL}`}>Email</a>
+	</nav>
+</header>
+
+<style>
+	.site-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 16px;
+		padding: 26px var(--gutter);
+		border-bottom: var(--rule);
+	}
+
+	nav {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		font-size: 14px;
+	}
+
+	nav a {
+		text-decoration: none;
+		padding-bottom: 2px;
+		border-bottom: 1px solid transparent;
+	}
+
+	nav a:hover {
+		border-bottom-color: var(--ink);
+	}
+
+	nav span {
+		color: var(--ink-35);
+	}
+</style>

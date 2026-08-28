@@ -1,0 +1,24 @@
+---
+import { render } from "astro:content";
+import CaseStudy from "../../layouts/CaseStudy.astro";
+import { getProjects, nextProject } from "../../lib/projects";
+
+export async function getStaticPaths() {
+	const projects = await getProjects();
+	return projects.map((project) => ({
+		params: { slug: project.id },
+		props: { project, next: nextProject(projects, project) },
+	}));
+}
+
+const { project, next } = Astro.props;
+const { Content } = await render(project);
+
+// The ledger is the whole page by default; the Markdown body is optional and
+// is `undefined` (not an empty string) on frontmatter-only entries.
+const hasBody = Boolean(project.body?.trim());
+---
+
+<CaseStudy project={project} next={next} hasBody={hasBody}>
+	<Content />
+</CaseStudy>
