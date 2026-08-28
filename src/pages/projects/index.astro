@@ -1,0 +1,83 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import { SITE_TITLE } from '../../consts';
+import { getCollection } from 'astro:content';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+
+function formatRange(start: Date, end?: Date) {
+	const fmt = (d: Date) => d.toLocaleDateString('en-us', { month: 'short', year: 'numeric' });
+	return end ? `${fmt(start)} – ${fmt(end)}` : fmt(start);
+}
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<BaseHead title={`Selected Projects | ${SITE_TITLE}`} description="Selected product design projects" />
+		<style>
+			main {
+				width: 720px;
+				max-width: calc(100% - 2em);
+				margin: auto;
+			}
+			ul {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+			}
+			li {
+				border-bottom: 1px solid rgb(var(--gray-light));
+				padding: 1.5em 0;
+			}
+			li:first-child {
+				padding-top: 0;
+			}
+			li a {
+				display: block;
+				text-decoration: none;
+				color: inherit;
+			}
+			li a:hover .title {
+				color: rgb(var(--accent));
+			}
+			.title {
+				margin: 0 0 0.25em 0;
+				color: rgb(var(--black));
+			}
+			.description {
+				margin: 0 0 0.5em 0;
+				color: rgb(var(--gray-dark));
+			}
+			.meta {
+				margin: 0;
+				color: rgb(var(--gray));
+				font-size: 0.9em;
+			}
+		</style>
+	</head>
+	<body>
+		<Header />
+		<main>
+			<h1>Selected Projects ↓</h1>
+			<ul>
+				{
+					projects.map((project) => (
+						<li>
+							<a href={`/projects/${project.id}/`}>
+								<h2 class="title">{project.data.title}</h2>
+								<p class="description">{project.data.description}</p>
+								<p class="meta">
+									{project.data.role} · {formatRange(project.data.pubDate, project.data.endDate)}
+								</p>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</main>
+		<Footer />
+	</body>
+</html>
