@@ -1,167 +1,25 @@
 ---
-import { Image } from "astro:assets";
-import type { CollectionEntry } from "astro:content";
-import { EMAIL } from "../lib/site";
-
 interface Props {
-	project: CollectionEntry<"projects">;
+	index: number;
+	title: string;
+	tag: string;
+	description: string;
+	years: string;
+	href: string;
 }
 
-const { project } = Astro.props;
-const { title, order, year, subline, cover, coverAlt, gated } = project.data;
-
-const number = String(order).padStart(2, "0");
-
-// Gated work stays visible and reachable: the row becomes a prefilled mailto
-// rather than a link to a case study that does not exist. No dead ends.
-const href = gated
-	? `mailto:${EMAIL}?subject=${encodeURIComponent(`Case study request — ${title}`)}`
-	: `/work/${project.id}/`;
+const { index, title, tag, description, years, href } = Astro.props;
+const number = String(index).padStart(2, "0");
 ---
 
 <a class="row" href={href}>
-	<span class="num idx" aria-hidden="true">{number}</span>
-
-	<span class="body">
-		<span class="name">{title}</span>
-		<span class="subline">{subline}</span>
+	<span class="row-num">{number}</span>
+	<span class="row-main">
+		<span class="row-head">
+			<span class="row-title">{title}</span>
+			<span class="row-tag">{tag}</span>
+		</span>
+		<span class="row-desc">{description}</span>
 	</span>
-
-	<span class="num year">{gated ? "On request" : year}</span>
-
-	{
-		cover && (
-			<Image
-				class="peek"
-				src={cover}
-				alt={coverAlt ?? ""}
-				widths={[380, 800]}
-				sizes="(max-width: 720px) 100vw, 190px"
-				loading="eager"
-			/>
-		)
-	}
+	<span class="row-year">{years}</span>
 </a>
-
-<style>
-	.row {
-		position: relative;
-		display: grid;
-		grid-template-columns: 26px 1fr auto;
-		grid-template-areas: "idx body year";
-		gap: 16px;
-		align-items: baseline;
-		padding: 18px var(--gutter);
-		border-top: var(--rule);
-		text-decoration: none;
-		color: var(--ink);
-		transition: background 0.18s;
-	}
-
-	.row:hover,
-	.row:focus-visible {
-		background: var(--lilac);
-		/* Lift the hovered row so the cover, which is taller than the row, is not
-		   sliced by the next row's 2px rule. */
-		z-index: 1;
-	}
-
-	.idx {
-		grid-area: idx;
-		color: var(--blue);
-	}
-
-	.body {
-		grid-area: body;
-		display: block;
-		min-width: 0;
-	}
-
-	.name {
-		display: block;
-		font-size: clamp(18px, 2.2vw, 22px);
-		font-weight: 500;
-		line-height: 1.2;
-	}
-
-	.subline {
-		display: block;
-		margin-top: 4px;
-		font-size: 13px;
-		font-weight: 300;
-		line-height: 1.5;
-		color: var(--ink-60);
-	}
-
-	.year {
-		grid-area: year;
-		color: var(--ink-label);
-		white-space: nowrap;
-	}
-
-	/* The cover reveal, identical on hover and keyboard focus.
-	   Spec §5 gives right: 96px, but at the resolved --gutter the year column
-	   reaches ~111px in from the row edge, so 96px sits on top of the year.
-	   132px keeps the cover inboard of the year, which is the spec's intent. */
-	.peek {
-		position: absolute;
-		right: 132px;
-		top: 50%;
-		width: 190px;
-		aspect-ratio: 3 / 2;
-		object-fit: cover;
-		border: var(--rule);
-		opacity: 0;
-		transform: translateY(-50%) scale(0.94);
-		transition: all 0.22s var(--ease);
-		pointer-events: none;
-	}
-
-	.row:hover .peek,
-	.row:focus-visible .peek {
-		opacity: 1;
-		transform: translateY(-50%) scale(1);
-	}
-
-	/* Below 720px the reveal is dropped: the cover sits inline under the row,
-	   and the number and year share one mono line above the name. */
-	@media (max-width: 720px) {
-		.row {
-			grid-template-columns: auto 1fr;
-			grid-template-areas:
-				"idx year"
-				"body body"
-				"cover cover";
-			gap: 4px 10px;
-			align-items: baseline;
-		}
-
-		.body {
-			margin-top: 6px;
-		}
-
-		.peek {
-			grid-area: cover;
-			position: static;
-			width: 100%;
-			margin-top: 14px;
-			opacity: 1;
-			transform: none;
-			transition: none;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.row {
-			transition: none;
-		}
-		.peek {
-			transition: none;
-			transform: translateY(-50%);
-		}
-		.row:hover .peek,
-		.row:focus-visible .peek {
-			transform: translateY(-50%);
-		}
-	}
-</style>

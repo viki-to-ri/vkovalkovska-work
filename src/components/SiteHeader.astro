@@ -1,56 +1,74 @@
 ---
-import AsciiMark from "./AsciiMark.astro";
-import { EMAIL, LINKEDIN } from "../lib/site";
+import { SITE_TITLE } from "../lib/site";
 
-interface Props {
-	/** Suppress the home link when already on the home page. */
-	home?: boolean;
-	/** Apply the page-load reveal. */
-	reveal?: boolean;
-}
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const nav = [
+	{ label: "work", href: "/" },
+	{ label: "about", href: "/about" },
+	{ label: "playlist", href: "/playlist" },
+];
 
-const { home = false, reveal = false } = Astro.props;
+/** Case study pages keep "work" marked as the current section. */
+const isCurrent = (href: string) =>
+	href === "/" ? path === "/" || path.startsWith("/work") : path === href;
 ---
 
-<header class:list={["site-header", reveal && "reveal"]}>
-	<AsciiMark href={home ? undefined : "/"} />
-	<nav aria-label="Primary">
-		<a href="/about">About</a>
-		<span aria-hidden="true">·</span>
-		<a href={LINKEDIN} target="_blank" rel="noopener noreferrer">LinkedIn</a>
-		<span aria-hidden="true">·</span>
-		<a href={`mailto:${EMAIL}`}>Email</a>
+<header class="site-header">
+	<a class="site-name" href="/">{SITE_TITLE}</a>
+
+	<nav class="site-nav" aria-label="Primary">
+		{
+			nav.map((item) => (
+				<a class="chip" href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
+					{item.label}
+				</a>
+			))
+		}
+
+		<button class="mode-toggle" type="button" data-mode-toggle aria-label="Switch colour mode">
+			<svg data-icon="cold-day" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
+				<circle cx="8" cy="8" r="3.1"></circle>
+				<path d="M8 1.4v1.6M8 13v1.6M1.4 8h1.6M13 8h1.6M3.34 3.34l1.13 1.13M11.53 11.53l1.13 1.13M12.66 3.34l-1.13 1.13M4.47 11.53l-1.13 1.13"></path>
+			</svg>
+			<svg data-icon="cool-night" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" aria-hidden="true">
+				<path d="M13.2 9.9A5.7 5.7 0 0 1 6.1 2.8a5.7 5.7 0 1 0 7.1 7.1Z"></path>
+			</svg>
+			<svg data-icon="blue-day" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
+				<circle cx="8" cy="8" r="5.9"></circle>
+				<circle cx="8" cy="8" r="1.7" fill="currentColor" stroke="none"></circle>
+			</svg>
+		</button>
 	</nav>
 </header>
 
-<style>
-	.site-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-		padding: 26px var(--gutter);
-		border-bottom: var(--rule);
+<script>
+	const KEY = "vk-portfolio-mode";
+	const MODES = ["cold-day", "cool-night", "blue-day"] as const;
+	const LABELS: Record<string, string> = {
+		"cold-day": "Cold day",
+		"cool-night": "Cool night",
+		"blue-day": "Blue day",
+	};
+
+	const root = document.documentElement;
+	const button = document.querySelector<HTMLButtonElement>("[data-mode-toggle]");
+
+	function describe(mode: string) {
+		const next = MODES[(MODES.indexOf(mode as (typeof MODES)[number]) + 1) % MODES.length];
+		button?.setAttribute("aria-label", `Colour mode: ${LABELS[mode]}. Switch to ${LABELS[next]}`);
 	}
 
-	nav {
-		display: flex;
-		align-items: center;
-		gap: 10px;
-		font-size: 14px;
-	}
+	describe(root.dataset.mode ?? MODES[0]);
 
-	nav a {
-		text-decoration: none;
-		padding-bottom: 2px;
-		border-bottom: 1px solid transparent;
-	}
-
-	nav a:hover {
-		border-bottom-color: var(--ink);
-	}
-
-	nav span {
-		color: var(--ink-35);
-	}
-</style>
+	button?.addEventListener("click", () => {
+		const current = root.dataset.mode ?? MODES[0];
+		const next = MODES[(MODES.indexOf(current as (typeof MODES)[number]) + 1) % MODES.length];
+		root.dataset.mode = next;
+		describe(next);
+		try {
+			localStorage.setItem(KEY, next);
+		} catch {
+			// Private browsing or blocked storage — the mode just won't persist.
+		}
+	});
+</script>

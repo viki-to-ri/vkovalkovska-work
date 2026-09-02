@@ -1,26 +1,42 @@
 ---
 import "../styles/global.css";
+import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
+import ContactBlock from "../components/ContactBlock.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../lib/site";
 
 interface Props {
 	title?: string;
 	description?: string;
-	/** Apply the page-load reveal to the footer. */
-	revealFooter?: boolean;
+	/** Content pages close on the contact block; case studies use their own footer. */
+	contact?: boolean;
 }
 
-const { title, description = SITE_DESCRIPTION, revealFooter = false } = Astro.props;
+const { title, description = SITE_DESCRIPTION, contact = false } = Astro.props;
 
-const pageTitle = title ? `${title} — ${SITE_TITLE}` : `${SITE_TITLE} — ${SITE_DESCRIPTION.split(".")[0]}`;
+const pageTitle = title ? `${title} — ${SITE_TITLE}` : `${SITE_TITLE} — product designer`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-mode="cold-day">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		{/* Restore the stored mode before first paint, so the page never flashes. */}
+		<script is:inline>
+			(function () {
+				var modes = ["cold-day", "cool-night", "blue-day"];
+				var mode = "cold-day";
+				try {
+					var stored = localStorage.getItem("vk-portfolio-mode");
+					if (modes.indexOf(stored) > -1) mode = stored;
+				} catch (e) {}
+				document.documentElement.dataset.mode = mode;
+			})();
+		</script>
+
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 
@@ -37,27 +53,21 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 		<meta name="twitter:title" content={pageTitle} />
 		<meta name="twitter:description" content={description} />
 
-		<link
-			rel="preload"
-			href="/fonts/space-grotesk-latin.woff2"
-			as="font"
-			type="font/woff2"
-			crossorigin
-		/>
-		<link
-			rel="preload"
-			href="/fonts/space-mono-latin-400.woff2"
-			as="font"
-			type="font/woff2"
-			crossorigin
-		/>
+		<link rel="preload" href="/fonts/sohne-400.woff2" as="font" type="font/woff2" crossorigin />
+		<link rel="preload" href="/fonts/sohne-mono-400.woff2" as="font" type="font/woff2" crossorigin />
 	</head>
 
 	<body>
 		<a class="skip-link" href="#main">Skip to content</a>
 		<div class="page">
-			<slot />
-			<SiteFooter reveal={revealFooter} />
+			<SiteHeader />
+			<main id="main">
+				<slot />
+			</main>
+			<div class="page-end">
+				{contact && <ContactBlock />}
+				<SiteFooter />
+			</div>
 		</div>
 	</body>
 </html>
