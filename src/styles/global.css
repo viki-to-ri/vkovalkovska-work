@@ -1,66 +1,108 @@
 /*
-  vkovalkovska.com — global tokens and base layer.
-  Structural device of the site is the 2px rule. No radius, no shadow, no gradient.
+  vkovalkovska.com — tokens, themes and the whole component layer.
+  Single 760px column, no radius, no shadow. Three modes cycled from the header
+  button and persisted under the `vk-portfolio-mode` localStorage key.
 */
 
-/* Space Grotesk ships as a variable face covering 300–700, so Light/Regular/Medium
-   are real instances rather than synthesised weights. Swap both families for the
-   licensed Pitch Sans / Pitch woff2 when the licence lands — the token names and
-   the fallback stacks below are already pointing at them. */
+/* Söhne, self-hosted from Klim's test web fonts
+   (resources/KlimTestFonts/Test web fonts (Static, WOFF2)/Test Söhne Collection).
+
+   These are trial cuts. Per Klim's readme they carry a limited character set —
+   A–Z, a–z, 0–9, period, comma, hyphen — and no OpenType features, so every
+   apostrophe, ·, ×, –, %, (), / and © falls back per glyph to the stacks below.
+   Licensed retail cuts fix this; drop them in under these same five filenames. */
 @font-face {
-	font-family: "Space Grotesk";
-	src: url("/fonts/space-grotesk-latin.woff2") format("woff2");
-	font-weight: 300 700;
-	font-style: normal;
-	font-display: swap;
-}
-@font-face {
-	font-family: "Space Mono";
-	src: url("/fonts/space-mono-latin-400.woff2") format("woff2");
+	font-family: "Sohne";
+	src: url("/fonts/sohne-400.woff2") format("woff2");
 	font-weight: 400;
 	font-style: normal;
 	font-display: swap;
 }
+@font-face {
+	font-family: "Sohne";
+	src: url("/fonts/sohne-500.woff2") format("woff2");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Sohne";
+	src: url("/fonts/sohne-600.woff2") format("woff2");
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Sohne Mono";
+	src: url("/fonts/sohne-mono-400.woff2") format("woff2");
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: "Sohne Mono";
+	src: url("/fonts/sohne-mono-500.woff2") format("woff2");
+	font-weight: 500;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* ---------- modes ---------- */
+
+/* Cold day is the default: it applies before the mode script runs, so an
+   unstyled first paint never happens. */
+:root,
+:root[data-mode="cold-day"] {
+	--bg: #f4f6f9;
+	--ink: #1b222b;
+	--dim: #4b545e;
+	--faint: #4c545d;
+	--line: #dde3ea;
+	--frame: #eaeef3;
+	--dot: #1b5ab0;
+	--link: #1251a5;
+	--hover-tint: rgba(27, 90, 176, 0.14);
+	--hover-ink: #f4f6f8;
+	color-scheme: light;
+}
+
+:root[data-mode="cool-night"] {
+	--bg: #1b1d22;
+	--ink: #dcdfe3;
+	--dim: #a3abb9;
+	--faint: #a6aebc;
+	--line: #31333b;
+	--frame: #262932;
+	--dot: #68a4e1;
+	--link: #76afe7;
+	--hover-tint: rgba(118, 175, 231, 0.22);
+	--hover-ink: #1c2025;
+	color-scheme: dark;
+}
+
+/* Blue day pulls every text tone into the accent; only the grounds stay neutral. */
+:root[data-mode="blue-day"] {
+	--bg: #f4f6f9;
+	--ink: #1251a5;
+	--dim: #1b5ab0;
+	--faint: #3568b5;
+	--line: #c7d9f0;
+	--frame: #eaeef3;
+	--dot: #1b5ab0;
+	--link: #1251a5;
+	--hover-tint: rgba(27, 90, 176, 0.14);
+	--hover-ink: #f4f6f8;
+	color-scheme: light;
+}
 
 :root {
-	/* palette */
-	--ink: #0e0e10;
-	--paper: #fcfcfa;
-	--blue: #1b4ef5; /* primary accent */
-	--blue-mid: #3874ff;
-	--blue-light: #5996ff; /* accents on dark grounds only */
-	--lilac: #f4ceff; /* highlight fields, hover row fill */
-
-	--ink-60: rgba(14, 14, 16, 0.6);
-	--ink-45: rgba(14, 14, 16, 0.45);
-	--ink-35: rgba(14, 14, 16, 0.35);
-	--ink-14: rgba(14, 14, 16, 0.14);
-
-	/* Small supporting labels (section label, year, meta labels, captions, ©).
-	   Spec §5–§6 assign --ink-45 / --ink-35 to these, but at 9.5–11px those measure
-	   3.07:1 and 2.3:1 on --paper — below WCAG AA, so they cannot meet the
-	   "100 accessibility" line in §10. One step darker clears AA at 5.02:1.
-	   Set this back to var(--ink-45) to restore the lighter tone. */
-	--ink-label: var(--ink-60);
-
-	/* --blue on --lilac measures 4.377:1, just under AA. Used only for the ledger
-	   label inside the OUTCOME field; imperceptibly darker, same hue. */
-	--blue-on-lilac: #1b4ae2;
-
-	/* type */
-	--font-sans: "Pitch Sans", "Space Grotesk", system-ui, sans-serif;
-	--font-mono: "Pitch", "Space Mono", ui-monospace, monospace;
-
-	/* rules — the structural device of the whole site */
-	--rule: 2px solid var(--ink);
-	--rule-hair: 1px solid var(--ink-14);
-
-	/* rhythm */
-	--gutter: clamp(20px, 5vw, 56px);
-	--measure: 34em; /* max line length for body copy */
-	--page-max: 1080px;
-
-	--ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+	--font-sans: "Sohne", system-ui, sans-serif;
+	--font-mono: "Sohne Mono", ui-monospace, monospace;
+	--page: 760px;
+	/* Body measure — 34em at the 17px prose size. Shared with the contact block,
+	   which sets it in px rather than em because its own type is 13.5px. */
+	--measure: 578px;
+	--mode-swap: 240ms ease;
 }
 
 /* ---------- reset ---------- */
@@ -69,192 +111,809 @@
 *::before,
 *::after {
 	box-sizing: border-box;
-	border-radius: 0;
-}
-
-html {
-	-webkit-text-size-adjust: 100%;
 }
 
 body,
 h1,
 h2,
 h3,
-h4,
 p,
-figure,
 ul,
 ol,
-dl,
-dd {
+figure {
 	margin: 0;
-}
-
-ul[class],
-ol[class] {
-	list-style: none;
 	padding: 0;
 }
 
-img,
-picture,
-svg {
+ul,
+ol {
+	list-style: none;
+}
+
+img {
 	display: block;
 	max-width: 100%;
 	height: auto;
 }
 
-button,
-input,
-textarea,
-select {
+button {
 	font: inherit;
 	color: inherit;
+	background: none;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
 }
 
 /* ---------- base ---------- */
 
+html {
+	background: var(--bg);
+}
+
 body {
-	background: var(--paper);
+	background: var(--bg);
 	color: var(--ink);
 	font-family: var(--font-sans);
-	font-size: 15px;
-	font-weight: 300;
-	line-height: 1.6;
-	text-align: left;
+	font-weight: 400;
+	font-size: 16px;
+	line-height: 1.55;
+	transition:
+		background-color var(--mode-swap),
+		color var(--mode-swap);
 	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 	text-rendering: optimizeLegibility;
 }
 
-h1,
-h2,
-h3,
-h4 {
-	font-weight: 300;
-	line-height: 1.2;
-	color: var(--ink);
-}
-
-a {
-	color: inherit;
-}
-
-strong,
-b {
-	font-weight: 500;
-}
-
 ::selection {
-	background: var(--lilac);
-	color: var(--ink);
+	background: var(--link);
+	color: var(--hover-ink);
 }
 
 :focus-visible {
-	outline: 2px solid var(--blue);
+	outline: 2px solid var(--link);
 	outline-offset: 2px;
 }
 
-.sr-only {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0 0 0 0);
-	white-space: nowrap;
-	border: 0;
+/* Sticky-footer column: main grows to absorb the leftover viewport height, so the
+   footer is pushed down by main's height rather than by any gap of its own.
+   Deliberately no justify-content here and no margin-top:auto on the footer —
+   either would stretch the gap above the footer instead. */
+.page {
+	max-width: var(--page);
+	margin: 0 auto;
+	padding: 0 32px 40px;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
 }
 
-/* Skip link — visually hidden until focused. */
+.page > main {
+	flex: 1 0 auto;
+}
+
+/* Contact block and footer travel together as one unit at the bottom of the
+   column — main's flex:1 pushes the pair down, never a gap between them. */
+.page-end {
+	flex: 0 0 auto;
+}
+
+/* Section headers, nav and metadata are the uppercase mono voice. */
+.label {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
 .skip-link {
 	position: absolute;
 	left: -9999px;
 	top: 0;
+}
+
+.skip-link:focus {
+	left: 8px;
+	top: 8px;
 	z-index: 10;
-	background: var(--ink);
-	color: var(--paper);
-	padding: 10px 16px;
+	padding: 8px 12px;
+	background: var(--link);
+	color: var(--hover-ink);
 	font-family: var(--font-mono);
-	font-size: 11px;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
+	font-size: 11.5px;
+}
+
+/* ---------- links ---------- */
+
+/* The fill-chip hover: nav items, back links, footer links, inline links. */
+.chip {
+	color: inherit;
+	text-decoration: none;
+	padding: 4px 6px;
+	border-radius: 0;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
+}
+
+.chip:hover,
+.chip:focus-visible {
+	background: var(--link);
+	color: var(--hover-ink);
+}
+
+.chip[aria-current="page"] {
+	color: var(--link);
+}
+
+.chip[aria-current="page"]:hover {
+	color: var(--hover-ink);
+}
+
+/* Underlined inline links inside prose. */
+.link {
+	color: var(--link);
+	padding: 1px 4px;
+	margin: 0 -4px;
+	text-decoration: underline;
+	text-decoration-color: var(--link);
+	text-decoration-thickness: 1px;
+	text-underline-offset: 3px;
+	transition:
+		background-color 120ms ease,
+		color 120ms ease;
+}
+
+.link:hover,
+.link:focus-visible {
+	background: var(--link);
+	color: var(--hover-ink);
+	text-decoration-color: var(--hover-ink);
+}
+
+/* ---------- header ---------- */
+
+.site-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	gap: 12px 20px;
+	flex-wrap: wrap;
+	padding: 40px 0 52px;
+}
+
+.site-name {
+	font-family: var(--font-mono);
+	font-size: 12.5px;
+	font-weight: 400;
+	letter-spacing: 0.06em;
+	/* Lowercased here rather than in SITE_TITLE, which still needs its capitals
+	   for <title>, OG tags and the case-study page titles. */
+	text-transform: lowercase;
+	color: var(--ink);
 	text-decoration: none;
 }
-.skip-link:focus-visible {
-	left: 0;
+
+.site-name:hover {
+	color: var(--link);
 }
 
-/* ---------- shared primitives ---------- */
-
-.page {
-	max-width: var(--page-max);
-	margin-inline: auto;
-}
-
-/* Label / kicker role: mono, uppercase, wide tracking. */
-.label {
+.site-nav {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	margin-right: -6px;
 	font-family: var(--font-mono);
-	font-size: 10.5px;
-	font-weight: 400;
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	line-height: 1.4;
+	font-size: 12.5px;
+	letter-spacing: 0.06em;
+	color: var(--dim);
 }
 
-/* Year / number role: mono with tabular figures so columns align. */
-.num {
+.mode-toggle {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 6px;
+	color: var(--dim);
+	transition: color 120ms ease;
+}
+
+.mode-toggle:hover {
+	color: var(--link);
+}
+
+.mode-toggle svg {
+	display: block;
+}
+
+/* Only the icon for the active mode is painted. */
+.mode-toggle [data-icon] {
+	display: none;
+}
+
+:root[data-mode="cold-day"] .mode-toggle [data-icon="cold-day"],
+:root:not([data-mode]) .mode-toggle [data-icon="cold-day"],
+:root[data-mode="cool-night"] .mode-toggle [data-icon="cool-night"],
+:root[data-mode="blue-day"] .mode-toggle [data-icon="blue-day"] {
+	display: block;
+}
+
+/* ---------- home ---------- */
+
+.availability {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 0.06em;
+	color: var(--dim);
+}
+
+.availability::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--dot);
+	flex: none;
+}
+
+.hero {
+	margin: 22px 0 26px;
+	font-size: 31px;
+	font-weight: 400;
+	line-height: 1.42;
+	letter-spacing: -0.015em;
+	max-width: 26em;
+}
+
+/* About and Playlist sit a step down from the home hero. */
+.page-title {
+	margin: 22px 0 20px;
+	font-size: 28px;
+	font-weight: 400;
+	line-height: 1.3;
+	letter-spacing: -0.015em;
+}
+
+.prose p {
+	color: var(--dim);
+	font-size: 17px;
+	line-height: 1.67;
+	max-width: var(--measure);
+	margin-bottom: 14px;
+}
+
+.prose p:last-child {
+	margin-bottom: 0;
+}
+
+.section {
+	margin-top: 56px;
+}
+
+.section > .label {
+	display: block;
+	margin-bottom: 10px;
+}
+
+/* ---------- row lists (selected work, playlist) ---------- */
+
+/* Rows carry both borders and overlap by a pixel so a hovered row can light its
+   own top and bottom rule without doubling up against its neighbours. */
+.rows {
+	display: flex;
+	flex-direction: column;
+}
+
+.row {
+	position: relative;
+	display: grid;
+	grid-template-columns: 28px 1fr auto;
+	gap: 0 16px;
+	align-items: baseline;
+	padding: 16px 0;
+	margin-bottom: -1px;
+	border-top: 1px solid var(--line);
+	border-bottom: 1px solid var(--line);
+	color: inherit;
+	text-decoration: none;
+	transition: border-color 120ms ease;
+}
+
+.row:last-child {
+	margin-bottom: 0;
+}
+
+a.row:hover,
+a.row:focus-visible {
+	z-index: 1;
+	border-color: var(--link);
+	color: var(--link);
+}
+
+a.row:hover *,
+a.row:focus-visible * {
+	color: var(--link);
+}
+
+.row-num,
+.row-year {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
+.row-year {
+	text-align: right;
+	white-space: nowrap;
+}
+
+/* Title and tag share one baseline row, wrapping to two lines only when the
+   column is too narrow to hold both. */
+.row-head {
+	display: flex;
+	align-items: baseline;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.row-title {
+	font-size: 19px;
+	font-weight: 500;
+	line-height: 1.3;
+	letter-spacing: -0.01em;
+}
+
+.row-tag {
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
+.row-desc {
+	display: block;
+	margin-top: 8px;
+	font-size: 15.5px;
+	line-height: 1.6;
+	max-width: 38em;
+	color: var(--dim);
+}
+
+/* Playlist rows are a single line: title left, author right. */
+.row--flat {
+	align-items: baseline;
+	padding: 13px 0;
+}
+
+.row--flat .row-num {
+	font-size: 11.5px;
+}
+
+.row--flat .row-title {
+	font-size: 16.5px;
+	font-weight: 400;
+	line-height: 1.55;
+}
+
+.row-author {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 0.06em;
+	color: var(--dim);
+	text-align: right;
+}
+
+/* Playlist subhead sits between the H1 and the list. */
+.subhead {
+	font-size: 16.5px;
+	line-height: 1.65;
+	color: var(--dim);
+}
+
+/* ---------- previous work table (about) ---------- */
+
+.ledger {
+	display: flex;
+	flex-direction: column;
+}
+
+.ledger-row {
+	display: grid;
+	grid-template-columns: 88px 1fr auto;
+	gap: 0 16px;
+	align-items: baseline;
+	padding: 13px 0;
+	margin-bottom: -1px;
+	border-top: 1px solid var(--line);
+	border-bottom: 1px solid var(--line);
+	/* The row is a mono container; only the project name opts back into Söhne. */
+	font-family: var(--font-mono);
+	font-size: 13px;
+	letter-spacing: 0.06em;
+}
+
+.ledger-row:last-child {
+	margin-bottom: 0;
+}
+
+.ledger-years {
+	color: var(--faint);
+}
+
+.ledger-role {
+	color: var(--dim);
+	text-align: right;
+}
+
+/* The one span inside the mono row that switches back to Söhne. Family and size
+   only — weight and tracking are left to inherit, per spec. */
+.ledger-name {
+	font-family: var(--font-sans);
+	font-size: 14px;
+	color: var(--ink);
+}
+
+/* Blue day flattens the colour hierarchy, so the name takes its weight back
+   through size. Scoped to the mode — never global. */
+:root[data-mode="blue-day"] .ledger-name {
+	font-size: 14px;
+}
+
+/* ---------- contact ---------- */
+
+/* No rule above the contact block — it's separated by open space alone.
+   (The case-study footer is the exception and keeps its border-top.) */
+.contact {
+	margin-top: 0;
+	padding-top: 96px;
+}
+
+.contact p {
+	/* Mono, not Söhne, despite reading as body copy. */
+	font-family: var(--font-mono);
+	font-size: 13.5px;
+	line-height: 1.65;
+	letter-spacing: 0.06em;
+	color: var(--dim);
+	/* Same rendered measure as the body copy, so the two blocks share an edge.
+	   Fixed, and deliberately independent of viewport width. */
+	max-width: var(--measure);
+	text-wrap: pretty;
+}
+
+.contact-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 14px;
+	margin-top: 14px;
+	font-family: var(--font-mono);
+	font-size: 13.5px;
+	letter-spacing: 0.06em;
+}
+
+/* ---------- footer ---------- */
+
+.note {
+	margin-top: 14px;
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
+/* The only gap between the contact links and this divider: 28 + 16 = 44px.
+   The contact section contributes nothing below itself. */
+.site-footer {
+	margin-top: 28px;
+	padding-top: 16px;
+	border-top: 1px solid var(--line);
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
+/* ---------- case study ---------- */
+
+.back {
+	display: inline-block;
+	margin: 0 0 32px -6px;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 0.06em;
+	color: var(--link);
+}
+
+.case-title {
+	font-size: 36px;
+	font-weight: 400;
+	line-height: 1.15;
+	letter-spacing: -0.02em;
+}
+
+.case-premise {
+	margin-top: 12px;
+	font-size: 20px;
+	font-weight: 400;
+	line-height: 1.5;
+	max-width: 26em;
+	color: var(--ink);
+}
+
+.case-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	margin-top: 18px;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
+.frame {
+	position: relative;
+	background: var(--frame);
+	overflow: hidden;
+	transition: background-color var(--mode-swap);
+}
+
+.frame img {
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+}
+
+.frame--cover {
+	margin-top: 34px;
+	aspect-ratio: 16 / 9;
+}
+
+.frame--screen {
+	aspect-ratio: 4 / 3;
+}
+
+/* Placeholder state: a centred mono caption on the frame ground. */
+.frame-placeholder {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px;
+	text-align: center;
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	line-height: 1.5;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
+/* Seam construction: the container's own background shows through the 1px gap,
+   which is what draws the gridlines. Cells get no border and must stay opaque —
+   a transparent cell would let the link-coloured container flood the whole cell. */
+.metrics {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 1px;
+	background: var(--link);
+	border: 1px solid var(--link);
+	margin-bottom: 26px;
+	transition:
+		background-color var(--mode-swap),
+		border-color var(--mode-swap);
+}
+
+.metric {
+	background: var(--bg);
+	padding: 24px 20px;
+	transition: background-color var(--mode-swap);
+}
+
+.metric-value {
+	font-size: 30px;
+	font-weight: 400;
+	line-height: 1.1;
+	letter-spacing: -0.02em;
+	color: var(--link);
+}
+
+.metric-label {
+	margin-top: 6px;
+	font-family: var(--font-mono);
+	font-size: 11.5px;
+	line-height: 1.5;
+	letter-spacing: 0.06em;
+	color: var(--link);
+}
+
+/* Collapsible detail sections — same overlapping-rule trick as the row lists. */
+.details {
+	display: flex;
+	flex-direction: column;
+}
+
+.details details {
+	margin-bottom: -1px;
+	border-top: 1px solid var(--line);
+	border-bottom: 1px solid var(--line);
+	transition: border-color 120ms ease;
+}
+
+.details details:last-child {
+	margin-bottom: 0;
+}
+
+.details details:hover {
+	position: relative;
+	z-index: 1;
+	border-color: var(--link);
+}
+
+.details details:hover > summary {
+	color: var(--link);
+}
+
+.details summary {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	padding: 14px 0;
+	font-size: 16.5px;
+	font-weight: 400;
+	cursor: pointer;
+	list-style: none;
+}
+
+.details summary::-webkit-details-marker {
+	display: none;
+}
+
+.chev {
+	display: inline-block;
 	font-family: var(--font-mono);
 	font-size: 11px;
-	font-weight: 400;
-	font-variant-numeric: tabular-nums;
-	letter-spacing: 0.04em;
+	line-height: 1.6;
+	color: var(--faint);
+	transition: transform 160ms ease;
 }
 
-/* Prose links inside body copy: never blue (contrast is insufficient at this size). */
-.prose a,
-.ledger-body a {
-	color: var(--ink);
-	text-decoration: underline;
-	text-underline-offset: 0.18em;
-	text-decoration-thickness: 1px;
-}
-.prose a:hover,
-.ledger-body a:hover {
-	text-decoration-thickness: 2px;
+.details details[open] .chev {
+	transform: rotate(90deg);
 }
 
-/* ---------- motion ---------- */
+.detail-body {
+	padding: 0 0 20px 22px;
+	color: var(--dim);
+	font-size: 16px;
+	line-height: 1.65;
+}
 
-/* One page-load reveal, staggered by the consuming component. Runs once. */
-@keyframes reveal {
-	from {
-		opacity: 0;
-		transform: translateY(6px);
+.detail-body p + ul {
+	margin-top: 12px;
+}
+
+.detail-body li {
+	position: relative;
+	padding-left: 16px;
+	margin-top: 7px;
+}
+
+.detail-body li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0.62em;
+	width: 4px;
+	height: 1px;
+	background: var(--faint);
+}
+
+.screens {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 16px;
+}
+
+.screen-caption {
+	margin-top: 8px;
+	font-family: var(--font-mono);
+	font-size: 11px;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
+.case-footer {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 12px 20px;
+	margin-top: 60px;
+	padding-top: 22px;
+	font-family: var(--font-mono);
+	font-size: 13px;
+	letter-spacing: 0.06em;
+	color: var(--faint);
+}
+
+.case-footer .link {
+	font-size: 13px;
+}
+
+.case-footer-nav {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 4px 10px;
+	margin-right: -6px;
+	color: var(--link);
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 600px) {
+	.page {
+		padding: 0 20px 32px;
 	}
-	to {
-		opacity: 1;
-		transform: none;
-	}
-}
 
-/* `backwards`, not `both`: the `to` state already equals the element's natural
-   style, and `forwards` would leave a transform matrix behind permanently —
-   which creates a stacking context and traps the work-row cover reveal beneath
-   the following row's rule. */
-.reveal {
-	animation: reveal 0.4s var(--ease) backwards;
-}
-
-/* The ASCII mark blinks. This is the whole personality; it should never be removed. */
-@keyframes blink {
-	0%,
-	92%,
-	100% {
-		transform: scaleY(1);
+	.site-header {
+		padding: 32px 0 40px;
 	}
-	96% {
-		transform: scaleY(0.08);
+
+	.site-nav {
+		margin-left: -6px;
+	}
+
+	.hero {
+		font-size: 26px;
+	}
+
+	.row {
+		grid-template-columns: 24px 1fr;
+		gap: 0 14px;
+	}
+
+	/* Description and date drop below the title, left-aligned under the number. */
+	.row-year {
+		grid-column: 1 / -1;
+		margin-top: 8px;
+		text-align: left;
+	}
+
+	.row--flat .row-author {
+		grid-column: 1 / -1;
+		margin-top: 4px;
+		text-align: left;
+	}
+
+	.ledger-row {
+		grid-template-columns: 74px 1fr;
+	}
+
+	.ledger-role {
+		grid-column: 1 / -1;
+		margin-top: 4px;
+		text-align: left;
+	}
+
+	.case-title {
+		font-size: 30px;
+	}
+
+	.case-premise {
+		font-size: 18px;
+	}
+
+	.case-meta {
+		gap: 2px 8px;
+	}
+
+	.screens {
+		grid-template-columns: 1fr;
 	}
 }
 
@@ -262,12 +921,7 @@ b {
 	*,
 	*::before,
 	*::after {
-		animation-duration: 0.001ms !important;
-		animation-iteration-count: 1 !important;
-		transition-duration: 0.001ms !important;
-		scroll-behavior: auto !important;
-	}
-	.reveal {
-		animation: none;
+		transition-duration: 1ms !important;
+		animation-duration: 1ms !important;
 	}
 }

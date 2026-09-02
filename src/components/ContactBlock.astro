@@ -1,0 +1,11 @@
+---
+import { CONTACT_COPY, EMAIL, LINKEDIN } from "../lib/site";
+---
+
+<section class="contact">
+	<p>{CONTACT_COPY}</p>
+	<p class="contact-links">
+		<a class="link" href={`mailto:${EMAIL}`}>email</a>
+		<a class="link" href={LINKEDIN} target="_blank" rel="noopener noreferrer">linkedin ↗</a>
+	</p>
+</section>

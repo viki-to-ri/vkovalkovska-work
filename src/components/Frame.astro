@@ -1,0 +1,34 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+	/** Omit to render the placeholder ground instead. */
+	src?: ImageMetadata;
+	alt?: string;
+	placeholder: string;
+	variant: "cover" | "screen";
+	/** Rendered width at 1x; emitted at 2x, capped at the source width. */
+	width: number;
+}
+
+const { src, alt = "", placeholder, variant, width } = Astro.props;
+const ratio = variant === "cover" ? 16 / 9 : 4 / 3;
+const out = src ? Math.min(width * 2, src.width) : width;
+---
+
+<div class={`frame frame--${variant}`}>
+	{
+		src ? (
+			<Image
+				src={src}
+				alt={alt}
+				width={out}
+				height={Math.round(out / ratio)}
+				loading={variant === "cover" ? "eager" : "lazy"}
+				fetchpriority={variant === "cover" ? "high" : "auto"}
+			/>
+		) : (
+			<span class="frame-placeholder">{placeholder}</span>
+		)
+	}
+</div>

@@ -200,3 +200,9 @@ dist
 
 ### Astro ###
 .astro/
+
+# Klim trial font downloads. Source material for the design, not site assets —
+# redistributing a foundry's full trial library from a public repo isn't ours to do.
+# The five woff2 the site actually loads live in public/fonts/ and are committed.
+resources/KlimTestFonts/
+resources/fonts/

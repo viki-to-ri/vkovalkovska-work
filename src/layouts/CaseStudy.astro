@@ -1,197 +1,109 @@
 ---
-import { Image } from "astro:assets";
 import type { CollectionEntry } from "astro:content";
 import Base from "./Base.astro";
-import AsciiMark from "../components/AsciiMark.astro";
-import MetaStrip from "../components/MetaStrip.astro";
-import BigFigures from "../components/BigFigures.astro";
-import LedgerRow from "../components/LedgerRow.astro";
-import NextProject from "../components/NextProject.astro";
+import Frame from "../components/Frame.astro";
+import { EMAIL } from "../lib/site";
 
 interface Props {
 	project: CollectionEntry<"projects">;
 	next?: CollectionEntry<"projects">;
-	hasBody?: boolean;
 }
 
-const { project, next, hasBody = false } = Astro.props;
-const { title, order, standfirst, cover, coverAlt, role, when, tools, figures, ledger, links } =
-	project.data;
-
-const kicker = `${String(order).padStart(2, "0")} — ${title}`;
-
-// The external links ride along on the OUTCOME field — the last entry, and the
-// one carrying the lilac highlight.
-const linkIndex = ledger.reduce(
-	(found, entry, i) => (entry.highlight ? i : found),
-	ledger.length - 1,
-);
+const { project, next } = Astro.props;
+const p = project.data;
 ---
 
-<Base title={title} description={standfirst}>
-	<header class="cs-header">
-		<a class="back" href="/">
-			<span aria-hidden="true">←</span> Work
-		</a>
-		<AsciiMark href="/" />
-	</header>
+<Base title={p.title} description={p.premise}>
+	<a class="back chip" href="/">← work</a>
 
-	<main id="main">
-		<article>
-			<div class="title-block">
-				<p class="label kicker">{kicker}</p>
-				<h1>{title}</h1>
-				<p class="standfirst">{standfirst}</p>
-			</div>
+	<h1 class="case-title">{p.title}</h1>
+	<p class="case-premise">{p.premise}</p>
 
+	<p class="case-meta">
+		{
+			p.meta.map((item, i) => (
+				<>
+					{i > 0 && <span aria-hidden="true">·</span>}
+					<span>{item}</span>
+				</>
+			))
+		}
+	</p>
+
+	<Frame
+		src={p.cover}
+		alt={p.coverAlt}
+		placeholder={p.coverPlaceholder}
+		variant="cover"
+		width={760}
+	/>
+
+	<section class="section">
+		<span class="label">Overview</span>
+		{
+			p.metrics.length > 0 && (
+				<div class="metrics">
+					{p.metrics.map((metric) => (
+						<div class="metric">
+							<div class="metric-value">{metric.value}</div>
+							<div class="metric-label">{metric.label}</div>
+						</div>
+					))}
+				</div>
+			)
+		}
+		<div class="prose"><p>{p.summary}</p></div>
+	</section>
+
+	<section class="section">
+		<span class="label">The details</span>
+		<div class="details">
 			{
-				cover && (
-					<Image
-						class="cover"
-						src={cover}
-						alt={coverAlt ?? ""}
-						widths={[720, 1080, 1600]}
-						sizes="(max-width: 1080px) 100vw, 1080px"
-						loading="eager"
-					/>
-				)
+				p.details.map((section) => (
+					<details>
+						<summary>
+							<span class="chev" aria-hidden="true">▸</span>
+							<span>{section.label}</span>
+						</summary>
+						<div class="detail-body">
+							{section.body && <p>{section.body}</p>}
+							{section.bullets.length > 0 && (
+								<ul>
+									{section.bullets.map((bullet) => (
+										<li>{bullet}</li>
+									))}
+								</ul>
+							)}
+						</div>
+					</details>
+				))
 			}
+		</div>
+	</section>
 
-			{figures.length > 0 && <BigFigures figures={figures} />}
+	{
+		p.screens.length > 0 && (
+			<section class="section">
+				<span class="label">Selected screens</span>
+				<div class="screens">
+					{p.screens.map((screen) => (
+						<figure>
+							<Frame placeholder={screen.caption} variant="screen" width={372} />
+							<figcaption class="screen-caption">{screen.caption}</figcaption>
+						</figure>
+					))}
+				</div>
+			</section>
+		)
+	}
 
-			<MetaStrip role={role} when={when} tools={tools} />
-
-			<div class="ledger-stack">
-				{
-					ledger.map((entry, i) => (
-						<LedgerRow
-							label={entry.label}
-							body={entry.body}
-							highlight={entry.highlight}
-							links={i === linkIndex ? links : []}
-						/>
-					))
-				}
-			</div>
-
-			{
-				hasBody && (
-					<div class="prose">
-						<slot />
-					</div>
-				)
-			}
-		</article>
-
-		{next && <NextProject project={next} />}
-	</main>
+	<nav class="case-footer" aria-label="Case study">
+		<span>
+			have questions? <a class="link" href={`mailto:${EMAIL}`}>get in touch</a>
+		</span>
+		<span class="case-footer-nav">
+			{next && <a class="link" href={`/work/${next.id}`}>next: {next.data.title} →</a>}
+			<a class="link" href="/">all work</a>
+		</span>
+	</nav>
 </Base>
-
-<style>
-	.cs-header {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 16px;
-		padding: 26px var(--gutter);
-		border-bottom: var(--rule);
-	}
-
-	.back {
-		font-family: var(--font-mono);
-		font-size: 11px;
-		letter-spacing: 0.12em;
-		text-transform: uppercase;
-		color: var(--blue);
-		text-decoration: none;
-	}
-
-	.back:hover {
-		text-decoration: underline;
-		text-underline-offset: 0.2em;
-	}
-
-	.title-block {
-		padding: 44px var(--gutter) 28px;
-	}
-
-	.kicker {
-		color: var(--blue);
-	}
-
-	.title-block h1 {
-		margin-top: 14px;
-		font-size: clamp(34px, 6vw, 56px);
-		font-weight: 300;
-		line-height: 1.08;
-		text-wrap: pretty;
-	}
-
-	.standfirst {
-		max-width: 24em;
-		margin-top: 16px;
-		font-size: clamp(16px, 2vw, 19px);
-		font-weight: 300;
-		line-height: 1.5;
-		text-wrap: pretty;
-	}
-
-	.cover {
-		width: 100%;
-		aspect-ratio: 16 / 7;
-		object-fit: cover;
-		border-top: var(--rule);
-	}
-
-	/* The meta strip's bottom rule opens the ledger — a border-top here would
-	   stack two 2px rules into a 4px one. */
-	.ledger-stack {
-		border-top: 0;
-	}
-
-	/* Optional Markdown body for the rare project that needs more than the ledger. */
-	.prose {
-		max-width: var(--measure);
-		padding: 30px var(--gutter);
-		border-top: var(--rule-hair);
-		font-size: 14.5px;
-		line-height: 1.6;
-	}
-</style>
-
-<style is:global>
-	/* The Markdown body renders outside component scope. */
-	.prose > * + * {
-		margin-top: 1em;
-	}
-
-	.prose h2 {
-		margin-top: 1.6em;
-		font-family: var(--font-mono);
-		font-size: 10.5px;
-		font-weight: 400;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--blue);
-	}
-
-	.prose img {
-		width: 100%;
-		border: var(--rule);
-		margin-block: 24px;
-	}
-
-	.prose figcaption {
-		margin-top: 8px;
-		font-family: var(--font-mono);
-		font-size: 11px;
-		color: var(--ink-45);
-	}
-
-	.prose ul {
-		list-style: none;
-		padding: 0;
-		display: grid;
-		gap: 6px;
-	}
-</style>
