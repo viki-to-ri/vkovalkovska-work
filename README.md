@@ -1,20 +1,25 @@
 # vkovalkovska.com
 
-Portfolio site for Viki Kovalkovska, product designer. Built to the contract in
-[`resources/portfolio-build-spec.md`](resources/portfolio-build-spec.md) — home is a compact
-hover-reveal index, case studies are a two-column ledger.
+Portfolio site for Viki Kovalkovska, product designer. Built to the spec in
+[`resources/HANDOFF.md`](resources/HANDOFF.md) — a single 760px column, three
+colour modes, and four case studies behind a numbered index.
 
 ## Stack
 
-- **Astro 5**, `output: 'static'` — every route prerenders, **zero client-side JS**.
-- **Content Collections** with a Zod schema for projects; Markdown frontmatter is the source of truth.
-- **Plain CSS** — design tokens in `src/styles/global.css` plus scoped `<style>` blocks per
-  component. No Tailwind, no CSS-in-JS.
-- **`astro:assets`** for every image, `@astrojs/sitemap` for the sitemap.
+- **Astro 5**, `output: 'static'` — every route prerenders at build time.
+- **Content Collections** with a Zod schema for projects; Markdown frontmatter is
+  the whole page, and the Markdown body goes unused.
+- **Plain CSS** — one stylesheet, `src/styles/global.css`, tokens in `:root`.
+  No Tailwind, no CSS-in-JS, no scoped component styles.
+- **`astro:assets`** for images, `@astrojs/sitemap` for the sitemap.
 - Deployed as a **Cloudflare Worker** serving static assets.
 
-**Node 22+ is required** (wrangler refuses to start below it). This repo uses Volta, so
-`volta install node@22` is enough.
+Two small scripts ship to the browser, both for the colour-mode toggle and both
+inlined into the HTML rather than emitted as separate files: a blocking one in
+`<head>` that restores the stored mode before first paint, and the click handler
+in `SiteHeader.astro`. Nothing else is interactive.
+
+**Node 22+ is required** — wrangler refuses to start below it.
 
 ## Commands
 
@@ -37,10 +42,13 @@ There is no test suite and no linter. `npm run check` is the closest thing to CI
 | :-------------- | :---------------------------- |
 | `/`             | `src/pages/index.astro`       |
 | `/about`        | `src/pages/about.astro`       |
+| `/playlist`     | `src/pages/playlist.astro`    |
 | `/work/<slug>`  | `src/pages/work/[slug].astro` |
 | `/404`          | `src/pages/404.astro`         |
 
-Slugs come from the Markdown filename: `rove-me.md` → `/work/rove-me/`.
+Slugs come from the Markdown filename: `roveme.md` → `/work/roveme/`. The spec
+fixes these at `komoot`, `verizon`, `roveme` and `podguides`, so renaming a file
+changes a published URL.
 
 ## Structure
 
@@ -48,100 +56,118 @@ Slugs come from the Markdown filename: `rove-me.md` → `/work/rove-me/`.
 src/
   content.config.ts          projects collection + Zod schema
   content/projects/          one .md per case study
-    covers/                  cropped 3:2 WebP covers
+    covers/                  3:2 WebP covers, currently unreferenced
   layouts/
-    Base.astro               <head>, skip link, footer
+    Base.astro               <head>, mode script, header, contact + footer
     CaseStudy.astro          the whole case-study page
   components/
-    SiteHeader / SiteFooter / AsciiMark
-    WorkIndex / WorkRow      the home index and its hover reveal
-    MetaStrip / BigFigures / LedgerRow / NextProject
+    SiteHeader.astro         name, nav, mode toggle (+ its client script)
+    SiteFooter.astro         the © line
+    ContactBlock.astro       closing copy + email/LinkedIn
+    WorkRow.astro            one numbered row on the home index
+    Frame.astro              cover/screen image or placeholder ground
+  data/
+    playlist.ts              books + Goodreads search helper
+    previous-work.ts         the About page ledger
   lib/
-    site.ts                  title, description, email, LinkedIn
-    projects.ts              ordering + next-project cycling
-    inline.ts                **bold** / [links] for ledger bodies
-  styles/global.css          tokens, reset, base type, motion
-public/fonts/                self-hosted woff2
-resources/                   build spec + original cover art
+    site.ts                  title, description, email, LinkedIn, shared copy
+    projects.ts              ordering + next-case cycling
+  styles/global.css          modes, tokens, reset, every component style
+public/fonts/                self-hosted Söhne woff2
+resources/                   handoff specs (font downloads are gitignored)
 ```
 
 ## Adding or editing a project
 
-Each case study is one Markdown file in `src/content/projects/`. The frontmatter *is* the page —
-the Markdown body is optional and only needed for a project that wants more than the ledger.
+Each case study is one Markdown file in `src/content/projects/`. The frontmatter
+*is* the page; the Markdown body is ignored.
 
-| Field        | Required | Notes                                                              |
-| :----------- | :------- | :----------------------------------------------------------------- |
-| `title`      | yes      | e.g. `"Verizon Sideview"`                                           |
-| `order`      | yes      | Controls index order **and** next-project cycling — not the date    |
-| `year`       | yes      | Display string, e.g. `"2020–21"`                                    |
-| `subline`    | yes      | One line for the index row, max 70 chars                            |
-| `standfirst` | yes      | 1–2 sentences under the case-study title                            |
-| `role`       | yes      | Meta strip                                                          |
-| `when`       | yes      | Meta strip, e.g. `"Sep 2020 – May 2021"`                            |
-| `tools`      | yes      | Meta strip                                                          |
-| `ledger`     | yes      | Array of `{ label, body, highlight? }` — the body of the page       |
-| `cover`      | no       | Relative path, e.g. `"./covers/roveme.webp"`                        |
-| `coverAlt`   | no       | Describe what the interface *does*, not "screenshot of X"           |
-| `figures`    | no       | Up to 3 `{ value, caption }` — big blue metrics under the cover     |
-| `links`      | no       | `{ label, href }`, rendered inside the OUTCOME field                |
-| `gated`      | no       | NDA'd: row becomes a prefilled `mailto:`, year reads `On request`   |
-| `draft`      | no       | Hidden in production builds, visible in `dev`                       |
+| Field              | Required | Notes                                                          |
+| :----------------- | :------- | :------------------------------------------------------------- |
+| `title`            | yes      | e.g. `"Verizon Sideview"`                                       |
+| `order`            | yes      | Index order **and** the next-case loop — not the date           |
+| `tag`              | yes      | Mono line beside the title on the index row                     |
+| `description`      | yes      | The one outcome-line on the index row                           |
+| `years`            | yes      | Display string, e.g. `"2020–21"`                                |
+| `premise`          | yes      | The 20px line under the case title                              |
+| `meta`             | yes      | Array of strings — role, dates, tools; rendered dot-separated   |
+| `summary`          | yes      | The Overview paragraph                                          |
+| `details`          | yes      | Array of `{ label, body?, bullets? }` — one `<details>` each    |
+| `metrics`          | no       | `{ value, label }` — the seam grid above the summary            |
+| `screens`          | no       | `{ caption }` — one placeholder frame each                      |
+| `cover`            | no       | Relative path, e.g. `"./covers/roveme.webp"`                    |
+| `coverAlt`         | no       | Describe what the interface *does*, not "screenshot of X"       |
+| `coverPlaceholder` | no       | Caption shown when there's no cover; defaults to `cover image`  |
+| `draft`            | no       | Hidden in production builds, visible in `dev`                   |
 
-### The ledger
+Cases render in `order`, and the footer's "next" link cycles from the last back
+to the first.
 
-The label column carries the structure so the copy can stay prose. Labels are short and human —
-`CONTEXT`, `GOAL`, `WHAT I DID`, `HARD PART`, `OUTCOME`. Exactly one entry sets `highlight: true`
-(the last one, `OUTCOME`); it gets the lilac field and carries the external links.
+## Colour modes
 
-Bodies accept `**bold**` and `[text](https://…)`, rendered at build time by `lib/inline.ts`.
-Lists inside a body are set as prose separated by `·`, not as bullets.
+Three modes cycle from one header button — **cold day** (default) → **cool
+night** → **blue day** — persisted to `localStorage` under `vk-portfolio-mode`.
 
-Every project must be reachable and honest: if it has no visuals yet, mark it `draft` rather than
-shipping a placeholder.
+Each mode is a block of custom properties on `:root[data-mode="…"]`: `--bg`,
+`--ink`, `--dim`, `--faint`, `--line`, `--frame`, `--dot`, `--link`,
+`--hover-tint`, `--hover-ink`. Nothing hard-codes a hex, so a new mode is one
+more block and one more entry in the `MODES` array in `SiteHeader.astro`.
 
-## Covers
+Cold day and cool night keep neutral grey text with blue reserved for links.
+Blue day pulls *every* text tone into the accent, which flattens the hierarchy —
+so previous-work project names take their weight back through size in that mode
+only, via `:root[data-mode="blue-day"] .ledger-name`.
 
-3:2, ideally ≥1600px wide, exported as WebP into `src/content/projects/covers/`. Crop **into real
-interface detail** — no floating device mockups on gradient fills. If the only asset is a marketing
-mockup, crop hard so the frame reads as a screen, not a product shot. Original art is kept in
-`resources/` for re-cropping.
+## Design notes
 
-Covers are eagerly loaded and drive both the index hover reveal (190px) and the case-study cover
-band (16:7). Everything degrades cleanly when `cover` is absent.
+- Border radius is `0` everywhere. No shadows, no gradients.
+- **Row hover** (work rows, playlist rows, `<details>` summaries) turns the text
+  and the row's top and bottom rules to `--link`, with no background fill. Rows
+  overlap by `-1px` and lift on `z-index` so a hovered rule never doubles.
+- **Nav and text-link hover** is the opposite: a solid `--link` fill with
+  `--hover-ink` text, square corners.
+- The **metrics grid** is a seam construction — the container's background shows
+  through a 1px `gap` to draw the lines. Cells carry no border and must stay
+  opaque, or the container floods them.
+- `.page` is a `min-height: 100vh` flex column with `flex: 1 0 auto` on `main`,
+  so the contact block and footer sit together at the bottom. Deliberately no
+  `justify-content` and no `margin-top: auto` on the footer — either inflates the
+  gap above it.
+- Body copy and the contact paragraph share one `--measure` (578px) so their
+  right edges line up despite different type sizes.
+- All transitions collapse under `prefers-reduced-motion`.
 
-## Design system
+## Fonts
 
-Tokens live in `:root` in `global.css`; nothing hard-codes a hex or a font name.
+Söhne and Söhne Mono, self-hosted as woff2 in `public/fonts/`.
 
-- Border radius is `0` everywhere. No box-shadows, no gradients — depth comes from 2px rules.
-- Everything is flush left.
-- `--paper` ground and `--ink` type are ~90% of every page. `--blue` is reserved for the mark, row
-  numbers, ledger labels, big figures, the contact link, and focus rings. `--lilac` appears at most
-  twice per page: the index row hover fill and the OUTCOME field.
-- Rules never stack — a `border-bottom` and a `border-top` meeting would render 4px.
+**These are Klim's *test* cuts.** Per Klim's own readme they carry a limited
+character set — `A–Z a–z 0–9 . , -` — and no OpenType features. Everything else
+falls back per glyph to `system-ui` / `ui-monospace`: apostrophes, `·`, `×`, `–`,
+`%`, `()`, `/`, `©`, and the arrows. That mismatch is most visible in the small
+mono labels, where the `·` separators come from a different face.
 
-Three motion moves, all suppressed under `prefers-reduced-motion`: the mark blinks, the index rows
-reveal their cover on hover **and keyboard focus**, and the page does one staggered load-in.
+Licensed retail cuts fix it with no code change — drop them into `public/fonts/`
+under these five names:
 
-Typography is **Space Grotesk + Space Mono**, self-hosted from `public/fonts/`. These stand in for
-the licensed **Pitch Sans / Pitch**; the token fallback stacks already name Pitch first, so dropping
-in the licensed woff2 files needs no layout retuning.
+| Klim cut         | Filename                | Used for                    |
+| :--------------- | :---------------------- | :-------------------------- |
+| Söhne Buch       | `sohne-400.woff2`       | body text                   |
+| Söhne Kräftig    | `sohne-500.woff2`       | row titles                  |
+| Söhne Halbfett   | `sohne-600.woff2`       | loaded, currently unused    |
+| Söhne Mono Buch  | `sohne-mono-400.woff2`  | labels, nav, metadata       |
+| Söhne Mono Kräftig | `sohne-mono-500.woff2` | loaded, currently unused    |
 
-## Deviations from the build spec
+A Klim commercial licence is required for public use beyond personal testing.
+The trial download itself is gitignored rather than committed.
 
-Documented here and in code comments so they don't read as mistakes:
+## Known gaps
 
-- **Small-label colour.** Spec §5–§6 assign `--ink-45` / `--ink-35` to labels, which measure 3.07:1
-  and 2.3:1 on `--paper` — below WCAG AA, and irreconcilable with the "100 accessibility" line in
-  §10. Resolved toward §10 behind one token, `--ink-label`; set it back to `var(--ink-45)` to
-  restore the lighter tone.
-- **Hover reveal offset.** Spec §5 gives `right: 96px`, but at the resolved `--gutter` the year
-  column reaches ~111px in, so the cover sat on top of the year. Uses `132px`.
-- **Deploy target.** Spec §1 names Netlify/Vercel; this repo stays on Cloudflare Workers, which is
-  what `wrangler.json` and the npm scripts are built around. Output is fully static either way.
-- **Years.** Taken from the real project dates rather than the §4 table, which disagreed with the
-  source site on komoot, rove.me, and PodGuides.
+- **Case imagery is all placeholders** — four 16:9 covers and eight 4:3 screens
+  render as captioned frames. The `.webp` covers in `content/projects/covers/`
+  are still in the repo but no longer referenced.
+- **Fonts** — see above; the licence is the blocker for going public.
+- The 600px breakpoint was written to spec but not verified on real devices.
 
 ## Deploying
 
@@ -150,5 +176,5 @@ npm run check     # build + types + deploy dry-run
 npm run deploy
 ```
 
-`astro.config.mjs` sets `site: "https://vkovalkovska.com"`, which drives canonical URLs and the
-sitemap — update it if the domain changes.
+`astro.config.mjs` sets `site: "https://vkovalkovska.com"`, which drives
+canonical URLs and the sitemap — update it if the domain changes.
