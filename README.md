@@ -72,7 +72,6 @@ natively — there is no scroll script. The name/logo link goes to `/` instead.
 src/
   content.config.ts          projects collection + Zod schema
   content/projects/          one .md per case study
-    covers/                  3:2 WebP covers, currently unreferenced
   layouts/
     Base.astro               <head>, mode script, header, contact + footer
     CaseStudy.astro          the whole case-study page
@@ -117,7 +116,7 @@ Each case study is one Markdown file in `src/content/projects/`. The frontmatter
 | `details`          | yes      | Array of `{ label, body?, bullets? }` — one `<details>` each    |
 | `metrics`          | no       | `{ value, label }` — the seam grid above the summary            |
 | `screens`          | no       | `{ caption }` — one placeholder frame each                      |
-| `cover`            | no       | Relative path, e.g. `"./covers/roveme.webp"`                    |
+| `cover`            | no       | Relative path to a 16:9 image, e.g. `"./covers/roveme.webp"`    |
 | `coverAlt`         | no       | Describe what the interface *does*, not "screenshot of X"       |
 | `coverPlaceholder` | no       | Caption shown when there's no cover; defaults to `cover image`  |
 | `draft`            | no       | Hidden in production builds, visible in `dev`                   |
@@ -212,9 +211,10 @@ The trial download itself is gitignored rather than committed.
 ## Known gaps
 
 - **Case imagery is all placeholders** — four 16:9 covers and eight 4:3 screens
-  render as captioned frames. The `.webp` covers in `content/projects/covers/`
-  are still in the repo but unreferenced, and they're 3:2, so wiring them into
-  the 16:9 frames would crop roughly 16% off the top and bottom.
+  render as captioned frames. No cover images are in the repo: the earlier 3:2
+  `.webp` set was removed, since it didn't match the 16:9 frames and is being
+  redone. Drop new ones into `src/content/projects/covers/` and set `cover:` in
+  each project's frontmatter; the schema and `Frame.astro` already support it.
 - **Screen captions render twice** — once inside the frame as its placeholder
   text, once as the `<figcaption>` below it. The spec doesn't say which should
   go.
