@@ -11,6 +11,3 @@ export const AVAILABILITY = "open to product design roles · remote / berlin / l
 
 export const CONTACT_COPY =
 	"I'm open to product design roles and the occasional project. Interested in working together? Get in touch!";
-
-/** The one place the mode key is named; the head script re-declares it inline. */
-export const MODE_STORAGE_KEY = "vk-portfolio-mode";
