@@ -8,7 +8,8 @@ import cloudflare from "@astrojs/cloudflare";
 // https://astro.build/config
 export default defineConfig({
 	site: "https://vkovalkovska.com",
-	// Every route prerenders; nothing ships client-side JS.
+	// Every route prerenders. The only client JS is the mode toggle and the
+	// mobile active-row tracker on the home page.
 	output: "static",
 	integrations: [mdx(), sitemap()],
 	adapter: cloudflare({

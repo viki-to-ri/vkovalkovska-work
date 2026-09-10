@@ -1,6 +1,5 @@
 ---
 interface Props {
-	index: number;
 	title: string;
 	tag: string;
 	description: string;
@@ -8,12 +7,11 @@ interface Props {
 	href: string;
 }
 
-const { index, title, tag, description, years, href } = Astro.props;
-const number = String(index).padStart(2, "0");
+const { title, tag, description, years, href } = Astro.props;
 ---
 
-<a class="row" href={href}>
-	<span class="row-num">{number}</span>
+<a class="row--work" href={href}>
+	<span class="row-year">{years}</span>
 	<span class="row-main">
 		<span class="row-head">
 			<span class="row-title">{title}</span>
@@ -21,5 +19,6 @@ const number = String(index).padStart(2, "0");
 		</span>
 		<span class="row-desc">{description}</span>
 	</span>
-	<span class="row-year">{years}</span>
+	{/* U+2794, not →. */}
+	<span class="row-arrow" aria-hidden="true">➔</span>
 </a>

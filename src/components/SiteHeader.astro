@@ -2,15 +2,17 @@
 import { SITE_TITLE } from "../lib/site";
 
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
-const nav = [
-	{ label: "work", href: "/" },
-	{ label: "about", href: "/about" },
-	{ label: "playlist", href: "/playlist" },
-];
 
-/** Case study pages keep "work" marked as the current section. */
-const isCurrent = (href: string) =>
-	href === "/" ? path === "/" || path.startsWith("/work") : path === href;
+/* "work" is the one nav link that isn't a plain page link: it lands on the home
+   page scrolled so the Selected work heading sits flush at the top of the
+   viewport. A plain fragment does exactly that natively — the section's own
+   56px top padding is the only offset, which is what the spec asks for — so no
+   scroll script is needed. The name/logo link goes to the very top instead. */
+const nav = [
+	{ label: "work", href: "/#selected-work", current: path === "/" || path.startsWith("/work") },
+	{ label: "about", href: "/about", current: path === "/about" },
+	{ label: "playlist", href: "/playlist", current: path === "/playlist" },
+];
 ---
 
 <header class="site-header">
@@ -19,23 +21,30 @@ const isCurrent = (href: string) =>
 	<nav class="site-nav" aria-label="Primary">
 		{
 			nav.map((item) => (
-				<a class="chip" href={item.href} aria-current={isCurrent(item.href) ? "page" : undefined}>
+				<a class="chip" href={item.href} aria-current={item.current ? "page" : undefined}>
 					{item.label}
 				</a>
 			))
 		}
 
-		<button class="mode-toggle" type="button" data-mode-toggle aria-label="Switch colour mode">
-			<svg data-icon="cold-day" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" aria-hidden="true">
-				<circle cx="8" cy="8" r="3.1"></circle>
-				<path d="M8 1.4v1.6M8 13v1.6M1.4 8h1.6M13 8h1.6M3.34 3.34l1.13 1.13M11.53 11.53l1.13 1.13M12.66 3.34l-1.13 1.13M4.47 11.53l-1.13 1.13"></path>
+		{/* Shows the mode you will get, not the mode you are in. */}
+		<button
+			class="mode-toggle"
+			type="button"
+			data-mode-toggle
+			aria-label="Switch to night mode"
+			title="Switch to night mode"
+		>
+			<svg data-icon="moon" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+				<path
+					d="M13.2 10.35A5.6 5.6 0 0 1 6.05 3.2a5.6 5.6 0 1 0 7.15 7.15z"
+					stroke="currentColor"
+					stroke-width="1.2"
+					stroke-linejoin="round"></path>
 			</svg>
-			<svg data-icon="cool-night" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round" aria-hidden="true">
-				<path d="M13.2 9.9A5.7 5.7 0 0 1 6.1 2.8a5.7 5.7 0 1 0 7.1 7.1Z"></path>
-			</svg>
-			<svg data-icon="blue-day" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true">
-				<circle cx="8" cy="8" r="5.9"></circle>
-				<circle cx="8" cy="8" r="1.7" fill="currentColor" stroke="none"></circle>
+			<svg data-icon="sun" width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+				<circle cx="8" cy="8" r="5.3" stroke="currentColor" stroke-width="1.2"></circle>
+				<circle cx="8" cy="8" r="2" fill="currentColor"></circle>
 			</svg>
 		</button>
 	</nav>
@@ -43,26 +52,23 @@ const isCurrent = (href: string) =>
 
 <script>
 	const KEY = "vk-portfolio-mode";
-	const MODES = ["cold-day", "cool-night", "blue-day"] as const;
-	const LABELS: Record<string, string> = {
-		"cold-day": "Cold day",
-		"cool-night": "Cool night",
-		"blue-day": "Blue day",
-	};
+	const DAY = "blue-day";
+	const NIGHT = "cool-night";
 
 	const root = document.documentElement;
 	const button = document.querySelector<HTMLButtonElement>("[data-mode-toggle]");
 
+	/** The button names its destination, never its current state. */
 	function describe(mode: string) {
-		const next = MODES[(MODES.indexOf(mode as (typeof MODES)[number]) + 1) % MODES.length];
-		button?.setAttribute("aria-label", `Colour mode: ${LABELS[mode]}. Switch to ${LABELS[next]}`);
+		const label = mode === NIGHT ? "Switch to day mode" : "Switch to night mode";
+		button?.setAttribute("aria-label", label);
+		button?.setAttribute("title", label);
 	}
 
-	describe(root.dataset.mode ?? MODES[0]);
+	describe(root.dataset.mode ?? DAY);
 
 	button?.addEventListener("click", () => {
-		const current = root.dataset.mode ?? MODES[0];
-		const next = MODES[(MODES.indexOf(current as (typeof MODES)[number]) + 1) % MODES.length];
+		const next = root.dataset.mode === NIGHT ? DAY : NIGHT;
 		root.dataset.mode = next;
 		describe(next);
 		try {

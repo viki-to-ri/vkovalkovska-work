@@ -13,21 +13,15 @@ const { project, next } = Astro.props;
 const p = project.data;
 ---
 
-<Base title={p.title} description={p.premise}>
+<Base page="case" title={p.title} description={p.premise}>
 	<a class="back chip" href="/">← work</a>
 
 	<h1 class="case-title">{p.title}</h1>
 	<p class="case-premise">{p.premise}</p>
 
+	{/* Separated by the 26px gap alone — no interpuncts. */}
 	<p class="case-meta">
-		{
-			p.meta.map((item, i) => (
-				<>
-					{i > 0 && <span aria-hidden="true">·</span>}
-					<span>{item}</span>
-				</>
-			))
-		}
+		{p.meta.map((item) => <span>{item}</span>)}
 	</p>
 
 	<Frame
@@ -97,13 +91,20 @@ const p = project.data;
 		)
 	}
 
+	{/* No rule above this, and no "all work" link — the header nav covers that.
+	    Only the project name and its arrow are underlined, never the word "next:". */}
 	<nav class="case-footer" aria-label="Case study">
-		<span>
-			have questions? <a class="link" href={`mailto:${EMAIL}`}>get in touch</a>
-		</span>
-		<span class="case-footer-nav">
-			{next && <a class="link" href={`/work/${next.id}`}>next: {next.data.title} →</a>}
-			<a class="link" href="/">all work</a>
-		</span>
+		<div class="case-footer-inner">
+			{
+				next && (
+					<span>
+						next: <a class="link" href={`/work/${next.id}`}>{next.data.title} →</a>
+					</span>
+				)
+			}
+			<span class="case-footer-ask">
+				have questions? <a class="link" href={`mailto:${EMAIL}`}>get in touch</a>
+			</span>
+		</div>
 	</nav>
 </Base>

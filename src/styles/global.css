@@ -1,6 +1,6 @@
 /*
   vkovalkovska.com — tokens, themes and the whole component layer.
-  Single 760px column, no radius, no shadow. Three modes cycled from the header
+  Single 760px column, no radius, no shadow. Two modes toggled from the header
   button and persisted under the `vk-portfolio-mode` localStorage key.
 */
 
@@ -25,6 +25,7 @@
 	font-style: normal;
 	font-display: swap;
 }
+/* 600 and Mono 500 are unused today. Kept loaded on purpose — see the spec. */
 @font-face {
 	font-family: "Sohne";
 	src: url("/fonts/sohne-600.woff2") format("woff2");
@@ -49,50 +50,45 @@
 
 /* ---------- modes ---------- */
 
-/* Cold day is the default: it applies before the mode script runs, so an
-   unstyled first paint never happens. */
+/* Blue day is monochrome-blue on purpose: ink, dim, faint, accent, dot and link
+   are all the same #1B5AB0. Hierarchy comes from size, weight and font family,
+   never from tone — three shades of blue were tried and rejected.
+
+   It is also the default, applying before the mode script runs so an unstyled
+   first paint never happens. */
 :root,
-:root[data-mode="cold-day"] {
-	--bg: #f4f6f9;
-	--ink: #1b222b;
-	--dim: #4b545e;
-	--faint: #4c545d;
-	--line: #dde3ea;
-	--frame: #eaeef3;
-	--dot: #1b5ab0;
-	--link: #1251a5;
-	--hover-tint: rgba(27, 90, 176, 0.14);
-	--hover-ink: #f4f6f8;
-	color-scheme: light;
-}
-
-:root[data-mode="cool-night"] {
-	--bg: #1b1d22;
-	--ink: #dcdfe3;
-	--dim: #a3abb9;
-	--faint: #a6aebc;
-	--line: #31333b;
-	--frame: #262932;
-	--dot: #68a4e1;
-	--link: #76afe7;
-	--hover-tint: rgba(118, 175, 231, 0.22);
-	--hover-ink: #1c2025;
-	color-scheme: dark;
-}
-
-/* Blue day pulls every text tone into the accent; only the grounds stay neutral. */
 :root[data-mode="blue-day"] {
 	--bg: #f4f6f9;
-	--ink: #1251a5;
+	--ink: #1b5ab0;
 	--dim: #1b5ab0;
-	--faint: #3568b5;
+	--faint: #1b5ab0;
 	--line: #c7d9f0;
 	--frame: #eaeef3;
+	--accent: #1b5ab0;
 	--dot: #1b5ab0;
-	--link: #1251a5;
+	--link: #1b5ab0;
 	--hover-tint: rgba(27, 90, 176, 0.14);
 	--hover-ink: #f4f6f8;
 	color-scheme: light;
+}
+
+/* Cool night flattens ink/dim/faint the same way, to a near-white with a cool
+   blue cast — not gray. The lighter sky blue is reserved for links, the
+   availability dot and hover fills. The ground and the rules stay blue-shifted
+   rather than neutral, to rhyme with day mode. */
+:root[data-mode="cool-night"] {
+	--bg: #171b24;
+	--ink: #d3dbe8;
+	--dim: #d3dbe8;
+	--faint: #d3dbe8;
+	--line: #2e3f56;
+	--frame: #212734;
+	--accent: #d3dbe8;
+	--dot: #8fbeef;
+	--link: #8fbeef;
+	--hover-tint: rgba(143, 190, 239, 0.22);
+	--hover-ink: #12151a;
+	color-scheme: dark;
 }
 
 :root {
@@ -103,6 +99,9 @@
 	   which sets it in px rather than em because its own type is 13.5px. */
 	--measure: 578px;
 	--mode-swap: 240ms ease;
+	/* Selected-work rows bleed this far past the column on both sides so the
+	   inverted hover fill has padding around the text instead of clipping flush. */
+	--row-bleed: 20px;
 }
 
 /* ---------- reset ---------- */
@@ -145,12 +144,34 @@ button {
 	cursor: pointer;
 }
 
+summary {
+	list-style: none;
+	cursor: pointer;
+}
+
+summary::-webkit-details-marker {
+	display: none;
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(8px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
 /* ---------- base ---------- */
 
 html {
 	background: var(--bg);
 }
 
+/* The 240ms dissolve lives here and only here. A global `transition: all` was
+   tried and makes every hover state feel laggy. */
 body {
 	background: var(--bg);
 	color: var(--ink);
@@ -164,6 +185,15 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	text-rendering: optimizeLegibility;
+}
+
+a {
+	color: var(--ink);
+	text-decoration: none;
+}
+
+a:hover {
+	color: var(--link);
 }
 
 ::selection {
@@ -189,8 +219,16 @@ body {
 	flex-direction: column;
 }
 
+/* Vertical rhythm is carried by top padding on each block, never by margins that
+   could collapse. Home opens tighter than the inner pages. */
 .page > main {
 	flex: 1 0 auto;
+	padding-top: 88px;
+}
+
+[data-page="home"] > .page > main {
+	padding-top: 72px;
+	animation: rise 400ms ease both;
 }
 
 /* Contact block and footer travel together as one unit at the bottom of the
@@ -201,6 +239,7 @@ body {
 
 /* Section headers, nav and metadata are the uppercase mono voice. */
 .label {
+	display: block;
 	font-family: var(--font-mono);
 	font-size: 12px;
 	text-transform: uppercase;
@@ -227,12 +266,12 @@ body {
 
 /* ---------- links ---------- */
 
-/* The fill-chip hover: nav items, back links, footer links, inline links. */
+/* The fill-chip hover: nav items and the case back link. The negative margin
+   cancels the padding, so the chip gets breathing room without shifting layout. */
 .chip {
 	color: inherit;
-	text-decoration: none;
-	padding: 4px 6px;
-	border-radius: 0;
+	padding: 2px 4px;
+	margin: -2px -4px;
 	transition:
 		background-color 120ms ease,
 		color 120ms ease;
@@ -244,6 +283,7 @@ body {
 	color: var(--hover-ink);
 }
 
+/* Current page is colour only. A filled active state was tried and rejected. */
 .chip[aria-current="page"] {
 	color: var(--link);
 }
@@ -252,11 +292,12 @@ body {
 	color: var(--hover-ink);
 }
 
-/* Underlined inline links inside prose. */
+/* Underlined inline links inside prose. The 1px thickness and 3px offset are the
+   site's link signature — heavier or closer changes the whole feel. */
 .link {
 	color: var(--link);
-	padding: 1px 4px;
-	margin: 0 -4px;
+	padding: 1px 3px 3px;
+	margin: -1px -3px -3px;
 	text-decoration: underline;
 	text-decoration-color: var(--link);
 	text-decoration-thickness: 1px;
@@ -275,47 +316,43 @@ body {
 
 /* ---------- header ---------- */
 
+/* Not sticky — it scrolls away with the page, deliberately. */
 .site-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: baseline;
-	gap: 12px 20px;
-	flex-wrap: wrap;
-	padding: 40px 0 52px;
+	gap: 24px;
+	padding: 36px 0 0;
+	font-family: var(--font-mono);
+	font-size: 12.5px;
+	letter-spacing: 0.01em;
 }
 
 .site-name {
-	font-family: var(--font-mono);
-	font-size: 12.5px;
 	font-weight: 400;
-	letter-spacing: 0.06em;
+	white-space: nowrap;
 	/* Lowercased here rather than in SITE_TITLE, which still needs its capitals
 	   for <title>, OG tags and the case-study page titles. */
 	text-transform: lowercase;
 	color: var(--ink);
-	text-decoration: none;
-}
-
-.site-name:hover {
-	color: var(--link);
 }
 
 .site-nav {
 	display: flex;
 	align-items: center;
-	gap: 2px;
-	margin-right: -6px;
-	font-family: var(--font-mono);
-	font-size: 12.5px;
-	letter-spacing: 0.06em;
+	gap: 22px;
+	/* Pulls the toggle's own 7px padding off the column edge so the icon sits
+	   optically flush with the right margin. */
+	margin-right: -7px;
 	color: var(--dim);
 }
 
+/* A switcher, not an indicator: it shows the icon of the mode you will get. */
 .mode-toggle {
-	display: inline-flex;
-	align-items: center;
-	padding: 4px 6px;
-	color: var(--dim);
+	appearance: none;
+	padding: 5px 7px;
+	line-height: 0;
+	color: var(--ink);
 	transition: color 120ms ease;
 }
 
@@ -327,27 +364,23 @@ body {
 	display: block;
 }
 
-/* Only the icon for the active mode is painted. */
-.mode-toggle [data-icon] {
+:root[data-mode="cool-night"] .mode-toggle [data-icon="moon"],
+:root:not([data-mode="cool-night"]) .mode-toggle [data-icon="sun"] {
 	display: none;
-}
-
-:root[data-mode="cold-day"] .mode-toggle [data-icon="cold-day"],
-:root:not([data-mode]) .mode-toggle [data-icon="cold-day"],
-:root[data-mode="cool-night"] .mode-toggle [data-icon="cool-night"],
-:root[data-mode="blue-day"] .mode-toggle [data-icon="blue-day"] {
-	display: block;
 }
 
 /* ---------- home ---------- */
 
+/* flex-start plus the dot's own offset, not align-items:center — when the text
+   wraps to two lines on mobile the dot must stay with the first line rather than
+   float in the middle of the block. */
 .availability {
 	display: flex;
-	align-items: center;
-	gap: 8px;
+	align-items: flex-start;
+	gap: 9px;
+	margin-bottom: 40px;
 	font-family: var(--font-mono);
 	font-size: 12px;
-	letter-spacing: 0.06em;
 	color: var(--dim);
 }
 
@@ -355,23 +388,32 @@ body {
 	content: "";
 	width: 6px;
 	height: 6px;
+	margin-top: 5px;
 	border-radius: 50%;
 	background: var(--dot);
-	flex: none;
+	flex-shrink: 0;
 }
 
 .hero {
-	margin: 22px 0 26px;
 	font-size: 31px;
 	font-weight: 400;
 	line-height: 1.42;
 	letter-spacing: -0.015em;
 	max-width: 26em;
+	text-wrap: pretty;
+}
+
+.hero + .prose {
+	margin-top: 26px;
+}
+
+[data-page="home"] .prose p {
+	line-height: 1.65;
 }
 
 /* About and Playlist sit a step down from the home hero. */
 .page-title {
-	margin: 22px 0 20px;
+	margin-bottom: 20px;
 	font-size: 28px;
 	font-weight: 400;
 	line-height: 1.3;
@@ -381,9 +423,10 @@ body {
 .prose p {
 	color: var(--dim);
 	font-size: 17px;
-	line-height: 1.67;
+	line-height: 1.7;
 	max-width: var(--measure);
-	margin-bottom: 14px;
+	margin-bottom: 18px;
+	text-wrap: pretty;
 }
 
 .prose p:last-child {
@@ -391,64 +434,86 @@ body {
 }
 
 .section {
-	margin-top: 56px;
+	padding-top: 56px;
 }
 
-.section > .label {
-	display: block;
-	margin-bottom: 10px;
+/* The single source of the gap under a section label. Blocks that need a margin
+   shorthand for their other sides (the work rows, the metrics grid) restate the
+   same 20px themselves. */
+.section > .label + * {
+	margin-top: 20px;
 }
 
-/* ---------- row lists (selected work, playlist) ---------- */
+[data-page="about"] .section {
+	padding-top: 72px;
+}
 
-/* Rows carry both borders and overlap by a pixel so a hovered row can light its
-   own top and bottom rule without doubling up against its neighbours. */
-.rows {
+[data-page="case"] .section {
+	padding-top: 64px;
+}
+
+/* ---------- selected work ---------- */
+
+/* The wrapper mirrors the rows' bleed — negative margin out, equal padding back
+   in — so its border-top spans exactly the width of the rows' border-bottom.
+   Without it the top rule reads 40px shorter than every rule below it. */
+.rows--work {
 	display: flex;
 	flex-direction: column;
+	margin: 20px calc(var(--row-bleed) * -1) 0;
+	padding: 0 var(--row-bleed);
+	border-top: 1px solid var(--line);
 }
 
-.row {
-	position: relative;
+/* The 56px year column is fixed, not auto: "2021" and "2024–25" must produce the
+   same indent so every title lines up on one vertical axis.
+
+   The transparent top border plus margin-top:-1px lets a row light its own top
+   rule on hover with no layout shift, and collapses adjacent rules to 1px. */
+.row--work {
 	display: grid;
-	grid-template-columns: 28px 1fr auto;
-	gap: 0 16px;
+	grid-template-columns: 56px 1fr auto;
+	gap: 20px;
 	align-items: baseline;
-	padding: 16px 0;
-	margin-bottom: -1px;
-	border-top: 1px solid var(--line);
+	padding: 26px var(--row-bleed);
+	margin: -1px calc(var(--row-bleed) * -1) 0;
+	border-top: 1px solid transparent;
 	border-bottom: 1px solid var(--line);
 	color: inherit;
-	text-decoration: none;
-	transition: border-color 120ms ease;
 }
 
-.row:last-child {
-	margin-bottom: 0;
-}
-
-a.row:hover,
-a.row:focus-visible {
+/* Full inversion — solid fill, everything inside flips. `[data-row-active]` is
+   the touch equivalent, driven by scroll position (see index.astro). */
+.row--work:hover,
+.row--work:focus-visible,
+.row--work[data-row-active] {
+	position: relative;
 	z-index: 1;
-	border-color: var(--link);
-	color: var(--link);
+	background: var(--link);
+	color: var(--hover-ink);
 }
 
-a.row:hover *,
-a.row:focus-visible * {
-	color: var(--link);
+.row--work:hover *,
+.row--work:focus-visible *,
+.row--work[data-row-active] * {
+	color: var(--hover-ink);
 }
 
-.row-num,
+/* The global ring is --link, which disappears against the row's own fill. */
+.row--work:focus-visible {
+	outline-color: var(--hover-ink);
+}
+
+/* Blockified as a grid item, but stated explicitly — it stays a block when the
+   row flips to flex on mobile too. */
+.row-main {
+	display: block;
+}
+
 .row-year {
 	font-family: var(--font-mono);
 	font-size: 12px;
-	letter-spacing: 0.06em;
 	color: var(--faint);
-}
-
-.row-year {
-	text-align: right;
 	white-space: nowrap;
 }
 
@@ -471,7 +536,6 @@ a.row:focus-visible * {
 .row-tag {
 	font-family: var(--font-mono);
 	font-size: 11.5px;
-	letter-spacing: 0.06em;
 	color: var(--faint);
 }
 
@@ -482,37 +546,79 @@ a.row:focus-visible * {
 	line-height: 1.6;
 	max-width: 38em;
 	color: var(--dim);
+	text-wrap: pretty;
 }
 
-/* Playlist rows are a single line: title left, author right. */
+/* U+2794 heavy wide-headed arrow, not →. */
+.row-arrow {
+	align-self: end;
+	justify-self: end;
+	font-family: var(--font-mono);
+	font-size: 18px;
+	line-height: 1;
+	color: var(--faint);
+}
+
+/* ---------- playlist ---------- */
+
+/* Not numbered — 01–09 was tried and removed. */
+.rows--flat {
+	display: flex;
+	flex-direction: column;
+	margin-top: 36px;
+	border-top: 1px solid var(--line);
+}
+
 .row--flat {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 16px;
 	align-items: baseline;
-	padding: 13px 0;
+	padding: 16px 0;
+	margin-top: -1px;
+	border-top: 1px solid transparent;
+	border-bottom: 1px solid var(--line);
+	color: inherit;
+	transition: border-color 120ms ease;
 }
 
-.row--flat .row-num {
-	font-size: 11.5px;
+/* The non-inverted hover: text and both rules take the link colour, no fill. */
+.row--flat:hover,
+.row--flat:focus-visible {
+	position: relative;
+	z-index: 1;
+	border-color: var(--link);
+	color: var(--link);
+}
+
+.row--flat:hover *,
+.row--flat:focus-visible * {
+	color: var(--link);
 }
 
 .row--flat .row-title {
 	font-size: 16.5px;
 	font-weight: 400;
 	line-height: 1.55;
+	letter-spacing: 0;
+	text-wrap: pretty;
 }
 
 .row-author {
 	font-family: var(--font-mono);
 	font-size: 12px;
-	letter-spacing: 0.06em;
 	color: var(--dim);
 	text-align: right;
+	white-space: nowrap;
 }
 
 /* Playlist subhead sits between the H1 and the list. */
 .subhead {
 	font-size: 16.5px;
 	line-height: 1.65;
+	max-width: 32em;
 	color: var(--dim);
+	text-wrap: pretty;
 }
 
 /* ---------- previous work table (about) ---------- */
@@ -520,25 +626,20 @@ a.row:focus-visible * {
 .ledger {
 	display: flex;
 	flex-direction: column;
-}
-
-.ledger-row {
-	display: grid;
-	grid-template-columns: 88px 1fr auto;
-	gap: 0 16px;
-	align-items: baseline;
-	padding: 13px 0;
-	margin-bottom: -1px;
 	border-top: 1px solid var(--line);
-	border-bottom: 1px solid var(--line);
 	/* The row is a mono container; only the project name opts back into Söhne. */
 	font-family: var(--font-mono);
 	font-size: 13px;
-	letter-spacing: 0.06em;
 }
 
-.ledger-row:last-child {
-	margin-bottom: 0;
+/* Not links — no hover state. */
+.ledger-row {
+	display: grid;
+	grid-template-columns: 100px 1fr auto;
+	gap: 20px;
+	align-items: baseline;
+	padding: 13px 0;
+	border-bottom: 1px solid var(--line);
 }
 
 .ledger-years {
@@ -548,29 +649,31 @@ a.row:focus-visible * {
 .ledger-role {
 	color: var(--dim);
 	text-align: right;
+	white-space: nowrap;
 }
 
-/* The one span inside the mono row that switches back to Söhne. Family and size
-   only — weight and tracking are left to inherit, per spec. */
+/* The one span inside a mono row that switches back to Söhne, at the About bio
+   size. Weight and tracking are left to inherit. */
 .ledger-name {
 	font-family: var(--font-sans);
-	font-size: 14px;
+	font-size: 17px;
 	color: var(--ink);
-}
-
-/* Blue day flattens the colour hierarchy, so the name takes its weight back
-   through size. Scoped to the mode — never global. */
-:root[data-mode="blue-day"] .ledger-name {
-	font-size: 14px;
 }
 
 /* ---------- contact ---------- */
 
-/* No rule above the contact block — it's separated by open space alone.
-   (The case-study footer is the exception and keeps its border-top.) */
+/* No rule above the contact block — it's separated by open space alone, and the
+   amount of space is a per-page decision. */
 .contact {
-	margin-top: 0;
-	padding-top: 96px;
+	padding-top: 64px;
+}
+
+[data-page="about"] .contact {
+	padding-top: 72px;
+}
+
+[data-page="playlist"] .contact {
+	padding-top: 140px;
 }
 
 .contact p {
@@ -578,7 +681,6 @@ a.row:focus-visible * {
 	font-family: var(--font-mono);
 	font-size: 13.5px;
 	line-height: 1.65;
-	letter-spacing: 0.06em;
 	color: var(--dim);
 	/* Same rendered measure as the body copy, so the two blocks share an edge.
 	   Fixed, and deliberately independent of viewport width. */
@@ -593,7 +695,6 @@ a.row:focus-visible * {
 	margin-top: 14px;
 	font-family: var(--font-mono);
 	font-size: 13.5px;
-	letter-spacing: 0.06em;
 }
 
 /* ---------- footer ---------- */
@@ -602,19 +703,15 @@ a.row:focus-visible * {
 	margin-top: 14px;
 	font-family: var(--font-mono);
 	font-size: 11.5px;
-	letter-spacing: 0.06em;
 	color: var(--faint);
 }
 
-/* The only gap between the contact links and this divider: 28 + 16 = 44px.
-   The contact section contributes nothing below itself. */
 .site-footer {
 	margin-top: 28px;
 	padding-top: 16px;
 	border-top: 1px solid var(--line);
 	font-family: var(--font-mono);
 	font-size: 11.5px;
-	letter-spacing: 0.06em;
 	color: var(--faint);
 }
 
@@ -622,14 +719,13 @@ a.row:focus-visible * {
 
 .back {
 	display: inline-block;
-	margin: 0 0 32px -6px;
 	font-family: var(--font-mono);
 	font-size: 12px;
-	letter-spacing: 0.06em;
 	color: var(--link);
 }
 
 .case-title {
+	margin-top: 34px;
 	font-size: 36px;
 	font-weight: 400;
 	line-height: 1.15;
@@ -637,30 +733,43 @@ a.row:focus-visible * {
 }
 
 .case-premise {
-	margin-top: 12px;
+	margin-top: 14px;
 	font-size: 20px;
 	font-weight: 400;
 	line-height: 1.5;
 	max-width: 26em;
 	color: var(--ink);
+	text-wrap: pretty;
 }
 
+/* Wide gaps stand in for separators — no interpuncts between the meta tags. */
 .case-meta {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4px 10px;
-	margin-top: 18px;
+	gap: 8px 26px;
+	margin-top: 26px;
 	font-family: var(--font-mono);
 	font-size: 12px;
-	letter-spacing: 0.06em;
 	color: var(--faint);
 }
 
+/* The hatch is a neutral gray at 4.5% alpha so it reads identically in both
+   modes; it only shows where no image covers it. */
 .frame {
 	position: relative;
 	background: var(--frame);
+	background-image: repeating-linear-gradient(
+		45deg,
+		transparent,
+		transparent 9px,
+		rgba(120, 120, 120, 0.045) 9px,
+		rgba(120, 120, 120, 0.045) 18px
+	);
+	border: 1px solid var(--line);
 	overflow: hidden;
-	transition: background-color var(--mode-swap);
+	transition:
+		background-color var(--mode-swap),
+		border-color var(--mode-swap);
 }
 
 .frame img {
@@ -670,7 +779,7 @@ a.row:focus-visible * {
 }
 
 .frame--cover {
-	margin-top: 34px;
+	margin-top: 44px;
 	aspect-ratio: 16 / 9;
 }
 
@@ -690,7 +799,6 @@ a.row:focus-visible * {
 	font-family: var(--font-mono);
 	font-size: 11.5px;
 	line-height: 1.5;
-	letter-spacing: 0.06em;
 	color: var(--faint);
 }
 
@@ -701,9 +809,9 @@ a.row:focus-visible * {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
 	gap: 1px;
+	margin: 20px 0 26px;
 	background: var(--link);
 	border: 1px solid var(--link);
-	margin-bottom: 26px;
 	transition:
 		background-color var(--mode-swap),
 		border-color var(--mode-swap);
@@ -728,80 +836,84 @@ a.row:focus-visible * {
 	font-family: var(--font-mono);
 	font-size: 11.5px;
 	line-height: 1.5;
-	letter-spacing: 0.06em;
 	color: var(--link);
 }
 
-/* Collapsible detail sections — same overlapping-rule trick as the row lists. */
+/* Collapsible detail sections — same collapsing-rule trick as the work rows, with
+   the wrapper supplying the top rule the first section's transparent border omits. */
 .details {
 	display: flex;
 	flex-direction: column;
+	border-top: 1px solid var(--line);
 }
 
 .details details {
-	margin-bottom: -1px;
-	border-top: 1px solid var(--line);
+	margin-top: -1px;
+	border-top: 1px solid transparent;
 	border-bottom: 1px solid var(--line);
 	transition: border-color 120ms ease;
 }
 
-.details details:last-child {
-	margin-bottom: 0;
-}
-
+/* The non-inverted hover, same as the playlist rows: no fill. */
 .details details:hover {
 	position: relative;
 	z-index: 1;
 	border-color: var(--link);
 }
 
-.details details:hover > summary {
+.details details:hover > summary,
+.details details:hover > summary .chev {
 	color: var(--link);
 }
 
 .details summary {
 	display: flex;
-	align-items: baseline;
-	gap: 10px;
-	padding: 14px 0;
+	align-items: center;
+	gap: 12px;
+	padding: 18px 0;
 	font-size: 16.5px;
 	font-weight: 400;
-	cursor: pointer;
-	list-style: none;
-}
-
-.details summary::-webkit-details-marker {
-	display: none;
 }
 
 .chev {
 	display: inline-block;
 	font-family: var(--font-mono);
 	font-size: 11px;
-	line-height: 1.6;
+	line-height: 1;
 	color: var(--faint);
-	transition: transform 160ms ease;
+	transition: transform 180ms ease;
 }
 
-.details details[open] .chev {
+.details details[open] > summary .chev {
 	transform: rotate(90deg);
 }
 
 .detail-body {
-	padding: 0 0 20px 22px;
+	padding: 0 0 26px 24px;
+	max-width: 36em;
 	color: var(--dim);
 	font-size: 16px;
-	line-height: 1.65;
+	line-height: 1.7;
 }
 
-.detail-body p + ul {
-	margin-top: 12px;
+.detail-body p {
+	margin-bottom: 12px;
 }
 
 .detail-body li {
 	position: relative;
 	padding-left: 16px;
-	margin-top: 7px;
+	margin-top: 9px;
+	line-height: 1.6;
+}
+
+/* The paragraph's own 12px is the gap above the list; only items pay the 9px. */
+.detail-body li:first-child {
+	margin-top: 0;
+}
+
+.detail-body > :last-child {
+	margin-bottom: 0;
 }
 
 .detail-body li::before {
@@ -824,80 +936,110 @@ a.row:focus-visible * {
 	margin-top: 8px;
 	font-family: var(--font-mono);
 	font-size: 11px;
-	letter-spacing: 0.06em;
 	color: var(--faint);
 }
 
+/* Deliberately no border-top — the case footer is separated by space alone. */
 .case-footer {
+	padding: 24px 0 0;
+	margin-top: 24px;
+}
+
+.case-footer-inner {
 	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	gap: 12px 20px;
-	margin-top: 60px;
-	padding-top: 22px;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 36px;
+	padding-top: 4px;
 	font-family: var(--font-mono);
 	font-size: 13px;
-	letter-spacing: 0.06em;
-	color: var(--faint);
-}
-
-.case-footer .link {
-	font-size: 13px;
-}
-
-.case-footer-nav {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px 10px;
-	margin-right: -6px;
 	color: var(--link);
+}
+
+/* The asymmetry is intentional: the next-case line hangs off the right edge while
+   the contact line lines up with the case title. */
+.case-footer-ask {
+	align-self: flex-start;
 }
 
 /* ---------- responsive ---------- */
 
 @media (max-width: 600px) {
 	.page {
-		padding: 0 20px 32px;
+		padding: 0 var(--row-bleed) 32px;
 	}
 
 	.site-header {
-		padding: 32px 0 40px;
+		flex-wrap: wrap;
+		row-gap: 14px;
 	}
 
 	.site-nav {
-		margin-left: -6px;
+		gap: 16px;
+		flex-wrap: wrap;
 	}
 
 	.hero {
 		font-size: 26px;
 	}
 
-	.row {
-		grid-template-columns: 24px 1fr;
-		gap: 0 14px;
+	/* Rows drop the grid and stack. The year goes right while everything else goes
+	   left — compositional contrast, and it pairs the year with the arrow on the
+	   same edge. */
+	.row--work {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 6px;
 	}
 
-	/* Description and date drop below the title, left-aligned under the number. */
-	.row-year {
-		grid-column: 1 / -1;
-		margin-top: 8px;
-		text-align: left;
+	.row--work .row-year {
+		align-self: flex-end;
+		text-align: right;
 	}
 
-	.row--flat .row-author {
-		grid-column: 1 / -1;
-		margin-top: 4px;
+	/* Forced to a column, or the tag rides up next to the title and overflows. */
+	.row--work .row-head {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+
+	.row-arrow {
+		align-self: flex-end;
+		font-size: 24px;
+	}
+
+	.row--flat {
+		grid-template-columns: 1fr;
+		gap: 4px;
+	}
+
+	.row-author {
 		text-align: left;
+		white-space: normal;
 	}
 
 	.ledger-row {
-		grid-template-columns: 74px 1fr;
+		grid-template-columns: 1fr;
+		gap: 2px;
+		padding: 16px 0;
+	}
+
+	.ledger-years {
+		font-size: 11.5px;
+		letter-spacing: 0.04em;
+		text-align: right;
+	}
+
+	.ledger-name {
+		margin-top: 2px;
 	}
 
 	.ledger-role {
-		grid-column: 1 / -1;
-		margin-top: 4px;
+		font-size: 12px;
 		text-align: left;
+		white-space: normal;
 	}
 
 	.case-title {
@@ -909,7 +1051,7 @@ a.row:focus-visible * {
 	}
 
 	.case-meta {
-		gap: 2px 8px;
+		gap: 12px 20px;
 	}
 
 	.screens {

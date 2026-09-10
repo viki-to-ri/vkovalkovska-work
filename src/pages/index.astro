@@ -7,7 +7,7 @@ import { AVAILABILITY } from "../lib/site";
 const projects = await getProjects();
 ---
 
-<Base contact>
+<Base contact page="home">
 	<p class="availability">{AVAILABILITY}</p>
 
 	<h1 class="hero">
@@ -20,19 +20,15 @@ const projects = await getProjects();
 			For the last 6+ years I've worked on product-led growth, native mobile apps, websites, 0→1
 			discovery and design, mostly remotely and mostly in international teams.
 		</p>
-		<p>
-			I'm looking for my next role right now, and I'm happy to chat about any of the projects below.
-			Get in touch!
-		</p>
 	</div>
 
-	<section class="section">
+	{/* The id is the "work" nav link's target — see SiteHeader. */}
+	<section class="section" id="selected-work">
 		<span class="label">Selected work</span>
-		<div class="rows">
+		<div class="rows--work">
 			{
-				projects.map((project, i) => (
+				projects.map((project) => (
 					<WorkRow
-						index={i + 1}
 						title={project.data.title}
 						tag={project.data.tag}
 						description={project.data.description}
@@ -43,5 +39,56 @@ const projects = await getProjects();
 			}
 		</div>
 	</section>
-
 </Base>
+
+<script>
+	/* Touch devices have no hover, so on narrow viewports the row nearest the top
+	   third of the screen carries the inverted state instead.
+
+	   Exactly one row is ever active — an IntersectionObserver band was tried first
+	   and lit several rows at once, so this measures distance to a target line and
+	   keeps the single nearest row. */
+	const rows = Array.from(document.querySelectorAll<HTMLElement>(".row--work"));
+
+	if (rows.length) {
+		const clear = () => rows.forEach((row) => row.removeAttribute("data-row-active"));
+
+		const update = () => {
+			if (window.innerWidth > 600) {
+				clear();
+				return;
+			}
+
+			clear();
+
+			/* Required: on a short list the last row can never reach the 35% line, so
+			   it would never activate. At the bottom of the page, force it. */
+			const atBottom =
+				window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+			if (atBottom) {
+				rows[rows.length - 1].setAttribute("data-row-active", "");
+				return;
+			}
+
+			const targetY = window.innerHeight * 0.35;
+			let closest: HTMLElement | null = null;
+			let closestDist = Infinity;
+
+			for (const row of rows) {
+				const rect = row.getBoundingClientRect();
+				if (rect.bottom < 0 || rect.top > window.innerHeight) continue;
+				const dist = Math.abs(rect.top + rect.height / 2 - targetY);
+				if (dist < closestDist) {
+					closestDist = dist;
+					closest = row;
+				}
+			}
+
+			closest?.setAttribute("data-row-active", "");
+		};
+
+		window.addEventListener("scroll", update, { passive: true });
+		window.addEventListener("resize", update);
+		setTimeout(update, 50);
+	}
+</script>
