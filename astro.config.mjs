@@ -7,7 +7,7 @@ import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
-	site: "https://vkovalkovska.com",
+	site: "https://vkovalkovska.work",
 	// Every route prerenders. The only client JS is the mode toggle and the
 	// mobile active-row tracker on the home page.
 	output: "static",
