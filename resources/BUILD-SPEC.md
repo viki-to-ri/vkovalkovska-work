@@ -85,7 +85,7 @@ The `240ms ease` transition on `background`/`color` is what makes the mode switc
 - Single column throughout. No sidebars, no multi-column text.
 - **Header is not sticky.** It scrolls away with the page. This was an explicit decision.
 - Breakpoint: **one**, at `max-width:600px`.
-- Footer sits directly after content (not pinned). If you need it pushed to the bottom on short pages, use `display:flex; flex-direction:column; min-height:100vh` on the shell and `flex:1 0 auto` on `<main>` — never `position:fixed`.
+- **Footer sticks to the bottom of the viewport on short pages** and scrolls away normally on long ones. Mechanics: the column is `display:flex; flex-direction:column; min-height:100vh; box-sizing:border-box` (border-box is required — without it the 40px bottom padding overshoots 100vh and every page grows a scrollbar), `<main>` is `flex:1 0 auto` with `padding-bottom:96px` as the floor, so the gap above the footer is never less than 96px. Never `position:fixed` or `sticky`; never `margin-top:auto` on the footer (loses the 96px floor). `100vh`, not `100dvh` — dvh makes the footer jump as mobile browser chrome collapses.
 
 ### Vertical rhythm (top padding per section)
 
@@ -94,13 +94,11 @@ The `240ms ease` transition on `background`/`color` is what makes the mode switc
 | Header top padding | `36px 0 0` |
 | Home hero section | `72px 0 0` |
 | Home → Selected work | `56px 0 0` |
-| Home → contact block | `64px 0 0` |
 | Case / About / Playlist `<main>` | `88px 0 0` |
 | Case internal sections (Overview, The details, Selected screens) | `64px 0 0` |
 | Case footer section | `24px 0 0; margin-top:24px` — **no border-top** |
-| About → Previous work, About → contact | `72px 0 0` |
-| Playlist → contact | `140px 0 0` |
-| Global footer | `margin-top:28px; padding-top:16px; border-top:1px solid var(--line)` |
+| About → Previous work | `72px 0 0` |
+| Content → global footer | `96px` minimum (main's bottom padding), more on short pages — **no border-top** |
 
 ---
 
@@ -121,7 +119,8 @@ Söhne unless "Mono" is noted. Colors are tokens.
 | Selected-work tag | Mono | 11.5px | 400 | `faint` | |
 | Selected-work description | Söhne | 15.5px | 400 | `dim` | `line-height:1.6`, `max-width:38em`, `margin-top:8px` |
 | Selected-work arrow ➔ | Mono | 18px → 24px ≤600px | 400 | `faint` | `line-height:1` |
-| Contact paragraph | **Mono** | 13.5px | 400 | `dim` | `line-height:1.65`, `max-width:34em` — Mono despite reading as body copy |
+| Global footer contact paragraph | **Mono** | 13.5px | 400 | `dim` | `line-height:1.65`, `max-width:34em` — Mono despite reading as body copy |
+| Global footer links (`email`, `linkedin ↗`) | Mono | 13.5px | 400 | `link` | inline-link treatment (§4.8), `gap:28px`, `margin-top:24px` |
 | email / linkedin links | Mono | 13.5px | 400 | `link` | underlined |
 | Case "← back" | Mono | 12px | 400 | `link` | |
 | Case H1 | Söhne | 36px | 400 | `ink` | `letter-spacing:-0.02em`, `margin-top:34px` |
@@ -145,7 +144,7 @@ Söhne unless "Mono" is noted. Colors are tokens.
 | Playlist book title | Söhne | 16.5px | 400 | `ink` | `line-height:1.55`, `text-wrap:pretty` |
 | Playlist author | Mono | 12px | 400 | `dim` | right-aligned, `white-space:nowrap` desktop |
 | "last updated…" | Mono | 11.5px | 400 | `faint` | |
-| Global footer | Mono | 11.5px | 400 | `faint` | |
+| Global footer copyright | Mono | 11.5px | 400 | `faint` | `margin-top:36px` |
 
 `text-wrap: pretty` is applied to the hero H1, case premise, all body paragraphs, and playlist titles. Keep it — it prevents orphans in a narrow measure.
 
@@ -283,7 +282,7 @@ Two details that matter:
 
 ### 4.7 Case study page
 
-Order: `← back` → H1 → premise → meta strip → 16:9 cover placeholder → **Overview** (metrics + summary) → **The details** (collapsible) → **Selected screens** → footer.
+Order: `← back` → H1 → premise → meta strip → 16:9 cover placeholder → **Overview** (metrics + summary) → **The details** (collapsible) → **Selected screens** → case footer (`next: [case] →` only).
 
 **Image placeholders** (cover 16:9, screens 4:3):
 ```
@@ -306,16 +305,25 @@ The 1px gaps reveal the container's `--link` background, which *is* the dividing
 
 Hover on `<details>` uses the *non-inverted* pattern: text → `--link`, top and bottom borders → `--link`, no fill.
 
-**Case footer** — stacked, no separator above:
+**Case footer** — one right-aligned line, no separator above:
 ```
 section: padding:24px 0 0; margin-top:24px      /* no border-top */
 inner:   display:flex; flex-direction:column; align-items:flex-end;
-         gap:36px; padding-top:4px; font-family:Mono; font-size:13px
+         padding-top:4px; font-family:Mono; font-size:13px
 ```
-Line 1: `next: ` as plain text + the project name and `→` as the underlined link. **Only the project name + arrow are underlined**, never the word "next:".
-Line 2: `have questions? get in touch` with `align-self:flex-start` — it left-aligns to the case title while the next-case line stays right. That asymmetry is intentional.
+`next: ` as plain text + the project name and `→` as the underlined link. **Only the project name + arrow are underlined**, never the word "next:".
 
-There is no "all work" link — the header nav covers it.
+There is no "all work" link (the header nav covers it) and no `have questions? get in touch` line — that duplicated the contact block, which now sits in the global footer directly below.
+
+### 4.7b Global footer
+
+Rendered once by the layout, on every page including case studies, as the last child of the flex column. `font-family:Mono`. **No border-top / separator** — the 96px floor above it is the only separation.
+
+1. Contact paragraph — 13.5px, `dim`, `line-height:1.65`, `max-width:34em`: *I’m open to product design roles and the occasional project. Interested in working together? Get in touch!* (typographic apostrophe, U+2019)
+2. Link row — `display:flex; gap:28px; flex-wrap:wrap; margin-top:24px`, 13.5px: `email` → `mailto:`, `linkedin ↗` → LinkedIn in a new tab with `rel="noreferrer"`. Both take the §4.8 inline-link treatment and chip hover.
+3. Copyright — 11.5px, `faint`, `margin-top:36px`: *© 2026 all rights reserved*.
+
+Sticky-to-bottom mechanics are in §2.
 
 ### 4.8 Inline text links
 
@@ -347,7 +355,7 @@ Year (small, right-aligned) → project name (17px) → role (12px). More row pa
 
 ### 4.10 Playlist
 
-`border-top:1px solid var(--line)` on the container, `margin-top:36px`.
+H1, then the subhead "Books I've read recently.", then the list. `border-top:1px solid var(--line)` on the container, `margin-top:36px`.
 
 Row (`<a>` to a Goodreads search URL, `https://www.goodreads.com/search?q=` + `encodeURIComponent(title + " " + author)`):
 `display:grid; grid-template-columns:1fr auto; gap:16px; padding:16px 0; border-bottom:1px solid var(--line); border-top:1px solid transparent; margin-top:-1px; align-items:baseline`.
@@ -430,7 +438,9 @@ Do not reintroduce these; each was explicitly reverted.
 - A filled/inverted active state on the current-page nav link.
 - Sticky header.
 - "all work" link in case footers.
-- A separator line above the case footer.
+- A separator line above the case footer, and above the global footer.
+- A contact block repeated per page (Home/About/Playlist with 64/72/140px gaps) — it lives in the global footer now.
+- A "have questions? get in touch" line in the case footer.
 - The hero intro paragraph "I'm looking for my next role right now…".
 - A "Now" section on About.
 - A before/after image comparison block on the komoot case.

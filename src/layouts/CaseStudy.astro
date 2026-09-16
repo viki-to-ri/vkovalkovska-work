@@ -2,7 +2,6 @@
 import type { CollectionEntry } from "astro:content";
 import Base from "./Base.astro";
 import Frame from "../components/Frame.astro";
-import { EMAIL } from "../lib/site";
 
 interface Props {
 	project: CollectionEntry<"projects">;
@@ -60,7 +59,9 @@ const p = project.data;
 							<span>{section.label}</span>
 						</summary>
 						<div class="detail-body">
-							{section.body && <p>{section.body}</p>}
+							{section.body.map((paragraph) => (
+								<p>{paragraph}</p>
+							))}
 							{section.bullets.length > 0 && (
 								<ul>
 									{section.bullets.map((bullet) => (
@@ -91,20 +92,18 @@ const p = project.data;
 		)
 	}
 
-	{/* No rule above this, and no "all work" link — the header nav covers that.
-	    Only the project name and its arrow are underlined, never the word "next:". */}
-	<nav class="case-footer" aria-label="Case study">
-		<div class="case-footer-inner">
-			{
-				next && (
+	{/* No rule above this, no "all work" link (the header nav covers that) and no
+	    contact line (the global footer carries it). Only the project name and its
+	    arrow are underlined, never the word "next:". */}
+	{
+		next && (
+			<nav class="case-footer" aria-label="Case study">
+				<div class="case-footer-inner">
 					<span>
 						next: <a class="link" href={`/work/${next.id}`}>{next.data.title} →</a>
 					</span>
-				)
-			}
-			<span class="case-footer-ask">
-				have questions? <a class="link" href={`mailto:${EMAIL}`}>get in touch</a>
-			</span>
-		</div>
-	</nav>
+				</div>
+			</nav>
+		)
+	}
 </Base>

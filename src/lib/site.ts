@@ -10,4 +10,4 @@ export const LINKEDIN = "https://www.linkedin.com/in/viki-kovalkovska/";
 export const AVAILABILITY = "open to product design roles · remote / berlin / leipzig";
 
 export const CONTACT_COPY =
-	"I'm open to product design roles and the occasional project. Interested in working together? Get in touch!";
+	"I’m open to product design roles and the occasional project. Interested in working together? Get in touch!";

@@ -73,12 +73,11 @@ src/
   content.config.ts          projects collection + Zod schema
   content/projects/          one .md per case study
   layouts/
-    Base.astro               <head>, mode script, header, contact + footer
+    Base.astro               <head>, mode script, header, footer
     CaseStudy.astro          the whole case-study page
   components/
     SiteHeader.astro         name, nav, mode toggle (+ its client script)
-    SiteFooter.astro         the © line
-    ContactBlock.astro       closing copy + email/LinkedIn
+    SiteFooter.astro         contact copy, email/LinkedIn, the © line
     WorkRow.astro            one row on the home index
     Frame.astro              cover/screen image or placeholder ground
   data/
@@ -94,8 +93,8 @@ resources/                   build spec + handoff (font downloads are gitignored
 
 `Base.astro` takes a required `page` prop — `"home" | "about" | "playlist" |
 "case"` — and stamps it on `<body data-page="…">`. The spec gives each page its
-own vertical rhythm and its own gap above the contact block, so that attribute is
-what the stylesheet keys those numbers off. It also gates the `rise` enter
+own vertical rhythm, so that attribute is what the stylesheet keys those numbers
+off. It also gates the `rise` enter
 animation, which runs on the home `<main>` only.
 
 ## Adding or editing a project
@@ -169,10 +168,11 @@ will *get* (moon in day, sun in night), and its `aria-label`/`title` say so.
   opaque, or the container floods them.
 - **Image frames** use a 45° hatch at 4.5% neutral grey, which reads identically
   in both modes and is simply covered up once a real image lands.
-- `.page` is a `min-height: 100vh` flex column with `flex: 1 0 auto` on `main`,
-  so the contact block and footer sit together at the bottom. Deliberately no
-  `justify-content` and no `margin-top: auto` on the footer — either inflates the
-  gap above it.
+- `.page` is a `min-height: 100vh` flex column with `flex: 1 0 auto` and a 96px
+  bottom padding on `main`, so the footer sits at the bottom of the viewport on
+  short pages and scrolls away on long ones, never closer than 96px to the
+  content. Deliberately no `justify-content` and no `margin-top: auto` on the
+  footer — either loses that floor.
 - Body copy and the contact paragraph share one `--measure` (578px) so their
   right edges line up despite different type sizes.
 - Mono letter-spacing is **not** global. Only the uppercase section labels

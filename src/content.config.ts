@@ -29,11 +29,15 @@ const projects = defineCollection({
 			metrics: z.array(z.object({ value: z.string(), label: z.string() })).default([]),
 			summary: z.string(),
 
-			// "The details" — one <details> per entry, collapsed by default.
+			// "The details" — one <details> per entry, collapsed by default. `body` is
+			// one paragraph or a list of them; either way the layout gets an array.
 			details: z.array(
 				z.object({
 					label: z.string(),
-					body: z.string().optional(),
+					body: z
+						.union([z.string(), z.array(z.string())])
+						.default([])
+						.transform((body) => (Array.isArray(body) ? body : [body])),
 					bullets: z.array(z.string()).default([]),
 				}),
 			),

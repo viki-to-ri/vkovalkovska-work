@@ -44,7 +44,12 @@ Two documents in `resources/`, and they split by concern:
 "improving" something, check it isn't on that list. Most likely to be
 reintroduced by accident: a third colour mode, tonal hierarchy (lighter blues for
 secondary text), numbering on the work or playlist lists, a filled active state
-on the current nav link, a sticky header, and a rule above the case footer.
+on the current nav link, a sticky header, a rule above either footer, and a
+per-page contact block or a "have questions?" line in the
+case footer (the global footer carries the contact block).
+
+`RELEASE-NOTES-*.md` files record what changed in a given handoff round and why;
+where one contradicts an older section of `HANDOFF.md`, the release notes win.
 
 The older `portfolio-*.md` files in `resources/` are earlier drafts, kept as
 history. Ignore them.
@@ -88,15 +93,22 @@ canonical URLs, `og:url` and the sitemap.
 ### Page shell
 
 `src/layouts/Base.astro` owns the whole shell: `<head>`, the pre-paint mode
-script, header, optional contact block, footer. Pages render into its slot.
+script, header, footer. Pages render into its slot. The footer (`SiteFooter.astro`)
+carries the contact block — copy, email/LinkedIn links, copyright — once, on
+every page including case studies. There is no per-page contact block and no rule
+above the footer.
 
 It takes a **required `page` prop** — `"home" | "about" | "playlist" | "case"` —
 stamped onto `<body data-page="…">`. The spec gives each page its own vertical
-rhythm and its own gap above the contact block, so the stylesheet keys those
-numbers off that attribute. A new page needs a `page` value and matching rules,
-not a one-off margin.
+rhythm, so the stylesheet keys those numbers off that attribute. A new page needs
+a `page` value and matching rules, not a one-off margin.
 
-`CaseStudy.astro` wraps `Base` for the case-study template.
+`CaseStudy.astro` wraps `Base` for the case-study template. A details section's
+`body` is one paragraph or a list of them — the schema normalises both to an array.
+
+The komoot case has its own copy rules (noted at the top of `komoot.md`): no em
+dashes in body copy, typographic apostrophes, mostly "we". Don't normalise them
+to match the other cases.
 
 ## CSS
 
@@ -113,6 +125,12 @@ Things that look like bugs but aren't:
 - **Transparent top borders plus `margin-top: -1px`** on rows and `<details>` let
   an element light its own top rule without shifting layout, and collapse
   adjacent rules to 1px. Removing either breaks the other.
+- **The footer is pushed down by `main`, not by anything of its own.** `.page` is
+  a `min-height: 100vh` flex column, `main` is `flex: 1 0 auto` with
+  `padding-bottom: 96px` as the floor. On a short page the footer sits at the
+  bottom of the viewport; on a long one it scrolls with the page. No
+  `position: fixed/sticky`, no `margin-top: auto` on the footer, `100vh` not
+  `100dvh`.
 - **The work-rows wrapper carries a mirrored `-20px` margin and `20px` padding**
   so its `border-top` spans the same width as the rows' bleeding
   `border-bottom`. Drop it and the top rule is visibly 40px short.

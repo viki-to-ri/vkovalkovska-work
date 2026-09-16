@@ -2,19 +2,16 @@
 import "../styles/global.css";
 import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
-import ContactBlock from "../components/ContactBlock.astro";
 import { SITE_TITLE, SITE_DESCRIPTION } from "../lib/site";
 
 interface Props {
 	title?: string;
 	description?: string;
-	/** Content pages close on the contact block; case studies use their own footer. */
-	contact?: boolean;
 	/** Drives the per-page vertical rhythm and the home-only enter animation. */
 	page: "home" | "about" | "playlist" | "case";
 }
 
-const { title, description = SITE_DESCRIPTION, contact = false, page } = Astro.props;
+const { title, description = SITE_DESCRIPTION, page } = Astro.props;
 
 const pageTitle = title ? `${title} — ${SITE_TITLE}` : `${SITE_TITLE} — product designer`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -65,10 +62,7 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
 			<main id="main">
 				<slot />
 			</main>
-			<div class="page-end">
-				{contact && <ContactBlock />}
-				<SiteFooter />
-			</div>
+			<SiteFooter />
 		</div>
 	</body>
 </html>

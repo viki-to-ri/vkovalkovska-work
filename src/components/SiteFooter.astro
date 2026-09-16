@@ -1,5 +1,16 @@
 ---
+import { CONTACT_COPY, EMAIL, LINKEDIN } from "../lib/site";
+
 const year = new Date().getFullYear();
 ---
 
-<footer class="site-footer">© {year} all rights reserved</footer>
+{/* One footer for every page, case studies included. No rule above it — the gap
+    at the bottom of main is the only separator. */}
+<footer class="site-footer">
+	<p class="site-footer-copy">{CONTACT_COPY}</p>
+	<p class="site-footer-links">
+		<a class="link" href={`mailto:${EMAIL}`}>email</a>
+		<a class="link" href={LINKEDIN} target="_blank" rel="noopener noreferrer">linkedin ↗</a>
+	</p>
+	<p class="site-footer-copyright">© {year} all rights reserved</p>
+</footer>

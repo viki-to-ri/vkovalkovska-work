@@ -38,9 +38,10 @@ Default font is Söhne unless "Mono" is specified. Color values are tokens (see 
 | Selected-work tag (e.g. "product design · acquisition (SEO) squad") | Mono | 11.5px | 400 | `faint` | |
 | Selected-work description line | Söhne | 15.5px | 400 | `dim` | line-height 1.6, max-width 38em |
 | Selected-work year (right-aligned) | Mono | 12px | 400 | `faint` | |
-| Contact block paragraph ("I'm open to product design roles...") | Mono | 13.5px | 400 | `dim` | line-height 1.65 — Mono, not Söhne, despite reading as body copy |
+| Contact block paragraph ("I'm open to product design roles...") | Mono | 13.5px | 400 | `dim` | line-height 1.65 — Mono, not Söhne, despite reading as body copy. Lives in the **global footer** on every page (see Global footer). No border/separator above it. |
 | email / linkedin / get in touch links | Mono | 13.5px (13px in case footer) | 400 | `link` | underlined, 1px, offset 3px |
 | Case "← back" link | Mono | 12px | 400 | `link` | |
+| About H1 / Playlist H1 | Söhne | 28px | 400 | `ink` | letter-spacing -0.015em |
 | Case title H1 | Söhne | 36px | 400 | `ink` | letter-spacing -0.02em |
 | Case premise line | Söhne | 20px | 400 | `ink` | line-height 1.5, max-width 26em |
 | Case meta tags (role · dates · tools) | Mono | 12px | 400 | `faint` | |
@@ -51,47 +52,47 @@ Default font is Söhne unless "Mono" is specified. Color values are tokens (see 
 | Details chevron ▸ | Mono | 11px | 400 | `faint` | rotates 90° when open |
 | Details body paragraph / list item | Söhne | 16px | 400 | `dim` | line-height 1.6–1.7 |
 | Case footer nav (next/all work) | Mono | 13px | 400 | `link` | |
-| About H1 / Playlist H1 | Söhne | 28px | 400 | `ink` | letter-spacing -0.015em |
 | Previous-work years | Mono | 13px | 400 | `faint` | |
 | Previous-work project name | **Söhne** (explicitly overridden from the mono row container) | 14px (18px in blue-day mode only) | 400 | `ink` | this is the one place inside a mono-font row that switches back to Söhne |
 | Previous-work role tag | Mono | 13px | 400 | `dim` | right-aligned |
-| Playlist subhead | Söhne | 16.5px | 400 | `dim` | line-height 1.65 |
 | Playlist row number | Mono | 11.5px | 400 | `faint` | |
 | Playlist book title | Söhne | 16.5px | 400 | `ink` | line-height 1.55 |
 | Playlist author (right-aligned) | Mono | 12px | 400 | `dim` | |
 | Playlist "last updated" line | Mono | 11.5px | 400 | `faint` | |
-| Global footer "© 2026 all rights reserved" | Mono | 11.5px | 400 | `faint` | |
+| Global footer "© 2026 all rights reserved" | Mono | 11.5px | 400 | `faint` | 36px above it |
 
 ## Layout
 - Single column, `max-width: 760px`, centered, `padding: 0 32px 40px`.
+- The column is a **flex column with `min-height:100vh`** so the global footer sticks to the bottom of the viewport on short pages (see Global footer).
 - Header: name (left) + nav (right): work / about / playlist / theme toggle button. Entire header — including the "viki kovalkovska" name link — uses **Söhne Mono**, 12.5px, not the body Söhne font. Sticky header was explicitly rejected — keep it static, scrolls with page.
 - Mobile breakpoint at 600px (see Responsive section).
 
-## Theme system (3 modes, cycled by one button, persisted in localStorage key `vk-portfolio-mode`)
-Default on load: **Cold day**.
+## Theme system (2 modes, one toggle button, persisted in localStorage key `vk-portfolio-mode`)
+Default on load: **Blue day**. Cold day mode has been removed entirely — only Blue day and Cool night remain.
 
-| Token | Cold day (default) | Cool night | Blue day |
-|---|---|---|---|
-| `--bg` | `#F4F6F9` | `#1B1D22` | `#F4F6F9` |
-| `--ink` (primary text) | `#1B222B` | `#DCDFE3` | `#1251A5` |
-| `--dim` (secondary text) | `#4B545E` | `#A3ABB9` | `#1B5AB0` |
-| `--faint` (tertiary/labels) | `#4C545D` | `#A6AEBC` | `#3568B5` |
-| `--line` (borders) | `#DDE3EA` | `#31333B` | `#C7D9F0` |
-| `--frame` (placeholder bg) | `#EAEEF3` | `#262932` | `#EAEEF3` |
-| `--dot` (availability dot) | `#1B5AB0` | `#68A4E1` | `#1B5AB0` |
-| `--link` (links, active states, hover) | `#1251A5` | `#76AFE7` | `#1251A5` |
-| `--hover-tint` | `rgba(27,90,176,.14)` | `rgba(118,175,231,.22)` | `rgba(27,90,176,.14)` |
-| `--hover-ink` (text on filled hover bg) | `#F4F6F8` | `#1C2025` | `#F4F6F8` |
+| Token | Blue day (default) | Cool night |
+|---|---|---|
+| `--bg` | `#F4F6F9` | `#1B1D22` |
+| `--ink` (primary text) | `#1B5AB0` | `#DCDFE3` |
+| `--dim` (secondary text) | `#1B5AB0` | `#A3ABB9` |
+| `--faint` (tertiary/labels) | `#1B5AB0` | `#A6AEBC` |
+| `--line` (borders) | `#C7D9F0` | `#2E3F56` |
+| `--frame` (placeholder bg) | `#EAEEF3` | `#262932` |
+| `--dot` (availability dot) | `#1B5AB0` | `#68A4E1` |
+| `--link` (links, active states, hover) | `#1B5AB0` | `#76AFE7` |
+| `--hover-tint` | `rgba(27,90,176,.14)` | `rgba(118,175,231,.22)` |
+| `--hover-ink` (text on filled hover bg) | `#F4F6F8` | `#1C2025` |
 
 Notes:
-- Cold day and cool night use neutral gray text (ink/dim/faint) with blue reserved for links/accents only.
-- Blue day is a variant where ALL text tones shift into shades of the accent blue (ink/dim/faint all blue). In blue-day mode only, Previous-work project names render at 18px (vs 14px base) to carry more visual weight since color no longer distinguishes them as strongly.
-- Toggle icon: cold day = sun (circle + rays), cool night = crescent moon, blue day = circle with center dot. Cycle order: cold day → cool night → blue day → cold day.
+- Blue day uses a single flat blue (`#1B5AB0`) for ink/dim/faint/accent/dot/link — no tonal hierarchy between them, intentionally. Previous-work project names still render at 18px (vs 14px base) in blue-day mode.
+- Cool night's `--line` was corrected from a neutral dark gray (`#31333B`) to a blue-tinted dark line (`#2E3F56`) so separators read as part of the blue palette rather than black.
+- Toggle button is a **switcher, not a status indicator**: it always shows the icon of the mode you'd switch *to*, not the current mode. In blue-day mode, the button shows the night (crescent moon) icon; in cool-night mode, it shows the day (circle+dot) icon. Clicking cycles blue day ↔ cool night.
 - Text selection (`::selection`) uses `background: var(--link)`, `color: var(--hover-ink)`.
 - Background/color transition: `240ms ease` on mode switch.
 
 ## Interaction patterns
-- **Row hover** (Selected work rows, Previous work is NOT a link so no hover, Details `<details>` summaries, Playlist rows): text inside turns `var(--link)`, and the row's top+bottom border also turns `var(--link)`. No background fill.
+- **Row hover, Selected work rows specifically**: inverted fill — background becomes solid `var(--link)`, all text/arrow inside becomes `var(--hover-ink)`. On mobile, since there's no hover, the row nearest the top third of the viewport gets this same inverted state automatically as the user scrolls (tracked via scroll position, recalculated on scroll/resize); when scrolled to the very bottom of the page, the LAST row is forced active even if it hasn't reached the top-third band (a short list won't always be able to scroll a row up there).
+- **Row hover, other rows** (Details `<details>` summaries, Playlist rows): text inside turns `var(--link)`, and the row's top+bottom border also turns `var(--link)`. No background fill.
 - **Nav / text link hover**: background fills `var(--link)`, text becomes `var(--hover-ink)` (i.e. a solid-fill hover chip), corners square (no border-radius).
 - **Mode button hover**: icon color turns `var(--link)`.
 - Underlined inline links (email, linkedin, "get in touch") use `text-decoration-color: var(--link)`, thickness 1px, offset 3px; on hover the same fill-chip treatment applies.
@@ -101,7 +102,9 @@ Notes:
 ## Responsive (max-width: 600px)
 - Header wraps (name + nav can go to two lines) instead of overlapping.
 - Hero H1 drops to 26px.
-- Selected-work rows collapse from 3-column grid (`28px 1fr auto`) to 2-column (`24px 1fr`); the description/date block spans full width below, left-aligned.
+- Selected-work rows: see stacking behavior described above (year → title → tag → description → arrow, each own line).
+- Availability-line dot aligns to the top of the first text line, not vertically centered, since the tagline text wraps to multiple lines on narrow screens.
+- Case footer (see below) stacks and both lines right-align.
 - Case "Selected screens" grid drops from 2 columns to 1.
 - Case meta tags wrap with tighter gap.
 
@@ -117,26 +120,31 @@ Notes:
 **Body paragraph 1**:
 > For the last 6+ years I've worked on product-led growth, native mobile apps, websites, 0→1 discovery and design, mostly remotely and mostly in international teams.
 
-**Body paragraph 2**:
-> I'm looking for my next role right now, and I'm happy to chat about any of the projects below. Get in touch!
+(The second intro paragraph — "I'm looking for my next role right now..." — has been removed. Do not re-add it.)
 
-**Selected work** — 4 rows, numbered 01–04, each: title (19px/500), a mono tag, one outcome-line description, year range right-aligned. Rows link to case pages.
+**Selected work** — 4 rows, NOT numbered (numbers removed — do not add 01–04 back), each: year range (left-aligned, fixed-width column, baseline-aligned with title so project titles stay vertically aligned regardless of year-string length), title (19px/500), a mono tag, one outcome-line description, and an ➔ arrow bottom-right of the row indicating it opens further. Rows link to case pages.
 
-| # | Title | Tag | Description | Years | Links to |
-|---|---|---|---|---|---|
-| 01 | komoot | product design · acquisition (SEO) squad | As part of the growth team, I contributed to improving signup rate by 1.96× and activation rate by 2.04×. | 2024–25 | /work/komoot |
-| 02 | Verizon Sideview | 0→1, cross-platform app | Led the 0→1 design of a native cross-platform app that gives sales and support teams a unified view of contact and account data during calls, shipped across iOS, Android, macOS and Windows. | 2020–21 | /work/verizon |
-| 03 | rove.me | retention, engagement | As part of cross-functional team, I contributed to improving unique visitors by 23%, returning visitors by 17% and bookings by 14%, through a sequence of experiments spanning content, design and SEO optimizations. | 2019–20 | /work/roveme |
-| 04 | PodGuides | product concept, mvp | Led 0→1 concept and MVP design exploring travel discovery through podcasts. Developed in collaboration with the iHeartMedia research team. | 2021 | /work/podguides |
+Row layout: `grid-template-columns: 56px 1fr auto` (year / content / arrow), `align-items:baseline`. Arrow is `font-size:18px` on desktop, `24px` on mobile (≤600px), color `faint`, self-aligned to the row's bottom-right corner.
 
-**Contact block** (bottom of Home):
-> I'm open to product design roles and the occasional project. Interested in working together? Get in touch!
-Links: `email` → `mailto:viki.kovalkovska@gmail.com`, `linkedin ↗` → `https://www.linkedin.com/in/viki-kovalkovska/`
+Row hover/active state (desktop hover, or the row nearest the top-third of the viewport on mobile while scrolling — see Interaction patterns): background fills solid `var(--link)`, ALL text and the arrow inside invert to `var(--hover-ink)`. Rows have `padding:26px 20px` with a `-20px` horizontal bleed/margin so the hover fill extends past the content column edges to the row's full visual width; the "Selected work" section label above shares this same `-20px` bleed on its top border so the two separators align exactly.
+
+On mobile (≤600px), each row's contents stack into 3 lines instead of one: year (right-aligned) → project title (left-aligned) → metadata tag (own line, left-aligned) → description → arrow bottom-right.
+
+| Title | Tag | Description | Years | Links to |
+|---|---|---|---|---|
+| komoot | product design · acquisition (SEO) squad | As part of the growth team, I contributed to improving signup rate by 1.96× and activation rate by 2.04×. | 2024–25 | /work/komoot |
+| Verizon Sideview | 0→1, cross-platform app | Led the 0→1 design of a native cross-platform app that gives sales and support teams a unified view of contact and account data during calls, shipped across iOS, Android, macOS and Windows. | 2020–21 | /work/verizon |
+| rove.me | retention, engagement | As part of cross-functional team, I contributed to improving unique visitors by 23%, returning visitors by 17% and bookings by 14%, through a sequence of experiments spanning content, design and SEO optimizations. | 2019–20 | /work/roveme |
+| PodGuides | product concept, mvp | Led 0→1 concept and MVP design exploring travel discovery through podcasts. Developed in collaboration with the iHeartMedia research team. | 2021 | /work/podguides |
+
+**Nav "work" link behavior**: clicking "work" in the header nav navigates home AND scrolls the page so the "Selected work" section (heading included) lands flush at the top of the viewport, no offset. The logo/name link still goes to the very top of the page.
+
+**Contact block**: no longer part of the Home page — it moved into the global footer (see Global footer).
 
 ---
 
 ### Case study pages (4 total, same template)
-Template order: back link → title (36px) → premise (20px) → meta tags (mono, faint) → cover image (16:9 placeholder, **needs real screenshot**) → **Overview** (optional metrics grid + summary paragraph) → **The details** (collapsible sections) → **Selected screens** (image grid, 2 placeholders per case, **needs real screenshots**) → footer (have questions?/get in touch, next case link, all work link).
+Template order: back link → title (36px) → premise (20px) → meta tags (mono, faint) → cover image (16:9 placeholder, **needs real screenshot**) → **Overview** (optional metrics grid + summary paragraph) → **The details** (collapsible sections) → **Selected screens** (image grid, 2 placeholders per case, **needs real screenshots**) → case footer — a right-aligned `next: [case] →` link only, no separator, no contact line (the global footer carries the contact block).
 
 **Metrics grid construction** (this is a "seam" trick, not individual bordered cells — get this exact or it looks wrong):
 - Outer grid container: `display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:1px; background:var(--link); border:1px solid var(--link)`.
@@ -147,27 +155,60 @@ Template order: back link → title (36px) → premise (20px) → meta tags (mon
 
 #### komoot
 - Premise: Enhancing user acquisition, activation, and user experience.
-- Meta: product designer, growth squad · jun 2024 – sep 2025 · figma, dovetail
-- Metrics: 1.96× signup rate | 2.04× activation rate, yoy
-- Summary: Our squad owned komoot's web journey from first visit to activation. I led the user research, owned design iterations and prototyping, and turned data and research insights into testable solutions. Most changes shipped behind an A/B test.
-- **Context**: komoot is a route planner app with the goal of offering tailored route recommendations for any activity, anywhere. With 22 million active users in 2025, it helps people find, plan, share and track outdoor adventures. Our squad owned all of komoot's landing pages and the web user journey from first visit to activation — the seven-day explorer window. We worked closely with the data science and growth teams responsible for monetisation and retention, relying heavily on analytics, user research and A/B tests.
-- **My role**: As product designer within the squad, I led user research, owned design iterations and prototyping, turning data and research insights into testable design directions.
-  - Led the user research and turned insights into testable design directions
-  - Owned design iterations and prototyping
-  - Collaborated closely with front- and back-end engineers, analysts and the wider design team
-  - Contributed to the design system and the broader research practice
-- **Deep dive: improving conversion on guide pages**: Guide pages were consistently our highest-traffic, highest-signup content type, driving nearly 60% of all web signups in June alone. When changes to how content was displayed required us to rethink these pages, we saw an opportunity to focus our efforts where the impact would be greatest. I led the user research to find out how first-time visitors perceived the updated guide pages, and iterated design improvements based on user insights.
-  - Visitors found site content mostly useful and engaging despite content changes (set limitations & introduced signup wall)
-  - Users had difficulties navigating the mobile version of the site
-  - Signup banner pop-ups were frustrating for most users
-  - Many research participants didn't realise creating a komoot account was free
-  - Users paid the most attention to photos, using them to judge whether a route would be interesting
-  - Route star ratings and stats built credibility and trust
-- **Outcomes and results**: Based on our findings, we implemented a series of changes to better communicate the value of creating an account and reduce friction. Most of these changes were tested to make sure we were making a positive impact. Changes included improvements to how route limitations were presented on destination pages, and the navigation menu for mobile web.
-  - Drove 18–20% of all komoot signups in 2024
-  - Increased signup rate by 1.96×
-  - Increased activation rate by 2.04× (YoY growth of users coming from web)
-- Screens (placeholders): guide page (desktop), guide page (mobile)
+- Meta: product designer, acquisition (SEO) squad · jun 2024 – sep 2025 · figma, dovetail (corrected — must match the Selected-work table tag exactly, do not say "growth squad")
+- Metrics (2 tiles — **experiment-level, not squad-level**; the 1.96×/2.04× squad figures now live in the Results section instead): `+12%` "signups — guide page banner vs. control" | `+8%` "signups — tour page banner vs. control"
+- Summary: Our squad owned komoot’s web journey from first visit to activation. I led the user research, owned design iterations and prototyping, and turned data and research insights into testable solutions. Most changes shipped behind an A/B test.
+
+**Nine accordion sections, in this order.** This case was rewritten in Sept 2026 to match Verizon's granularity. Tone is deliberately plain and collaborative — mostly "we", first person only where the action is literally hers. **Copy rules for this case: no em dashes in body copy** (screen placeholder labels keep theirs as separators), and typographic apostrophes (U+2019) throughout. Do not "improve" this copy; it is the user's own wording and was iterated over several rounds.
+
+1. **Context** (2 paras, no list)
+   > komoot is a route planner app offering tailored route recommendations for any activity, anywhere. With 22 million active users in 2025, it helps people find, plan, share and track outdoor adventures.
+   > Our squad owned all of komoot’s landing pages and the web journey from first visit to activation, the seven-day explorer window. We worked closely with the data science and growth teams who owned monetisation and retention, so analytics, research and A/B tests were part of how we made most decisions.
+2. **My role** (1 para, no list)
+   > I was the product designer in the squad. I led the user research, owned the design iterations and prototyping, and worked with the team to turn what we learned into things we could actually test. I also contributed to the design system and to how the wider team ran research.
+3. **Deep dive: guide and tour pages** (2 paras, no list)
+   > Guide pages were our highest-traffic, highest-signup content type, with close to 60% of all web signups in June. So when a change to how content was displayed meant we had to rethink these pages anyway, it seemed like a good place to spend our effort.
+   > Our goal was to clearly communicate komoot’s value proposition and the value of creating an account, help people find a perfect route, and inspire them to go out within the next 7 days.
+4. **Process** (2 paras, no list)
+   > We started with product analytics, to see how the content changes had affected behaviour and our main KPIs. That told us what had moved but not why, so we followed up with qualitative research.
+   > We ran ten unmoderated usability tests and interviews on mobile and ten on desktop. We matched the structure of an earlier study on purpose, so we could compare results instead of starting from scratch. From there I iterated design directions against our goals, and we scored them together on an impact-effort scale.
+5. **What we learned** (2 paras + 4-item list)
+   > We were surprised to learn that most people simply didn’t realise a komoot account was free. We confirmed our assumption that the signup popup was frustrating for most visitors, but removing it wasn’t possible at the time, so timing became the thing we could work on.
+   > We’d also assumed that komoot’s community and its user-generated content would be the most compelling reason to sign up. The A/B test suggested otherwise. People were more motivated when they could see a clear number of routes they’d get access to. The rest of the research gave us useful material to work with:
+   - People paid the most attention to photos, using them to judge whether a route would be interesting
+   - Star ratings and route stats built credibility and trust
+   - People found the content useful and engaging despite the new limitations and the signup wall
+   - The mobile version of the site was difficult to navigate
+6. **What we shipped** (3 paras, no list)
+   > We went for the overlap between what the research told us, what we were trying to achieve, and what didn’t need much engineering time. Almost everything shipped behind an A/B test.
+   > We tested three versions of the end-of-page signup banner on guide pages, and variation 1 brought in 12% more signups than control. We rebuilt the signup banner on tour pages the same way, which came out 8% ahead of control. Both shipped.
+   > We also changed the timing and targeting of the initial signup popup, and rewrote the copy on buttons and signup modules so that a free account actually reads as free.
+
+   ⚠ **Do not swap these two figures.** +12% is the **guide** page banner, +8% is the **tour** page banner. Confirmed directly with the user; an earlier draft had them reversed.
+7. **What we left out** (2 paras, no list)
+   > We had to keep the scope tight, so quite a few things moved further up the product timeline. Removing the signup popup entirely, filtering for logged-out visitors, rethinking navigation across mobile and desktop, redesigning tour cards to lead with photos, and reworking the main CTAs on those cards all came out of scope.
+   > Navigation and the tour-card CTAs were the ones I thought were essential to improving the pages, and the research pointed at both. We couldn’t fit them into the quarter, but we opened experiments on them in the next one.
+8. **Results** (1 para + 3-item list) — squad-level and framed as such
+   > Across everything the squad did on the activation journey and on guide and tour pages over the year:
+   - 18–20% of all komoot signups in 2024 came through web
+   - Signup rate increased by 1.96×
+   - Activation rate increased by 2.04× (YoY growth of users coming from web)
+9. **Other work in the squad** (1 para + 6-item list)
+   > Guide and tour pages were one project among many. Over the next months we also picked up several of the things this deep dive had put on the list, and plenty that it hadn’t:
+   - Improved the CTAs on tour cards
+   - Smoothed the redirects and transitions between logged-out and logged-in pages
+   - Fixed site navigation on mobile and desktop
+   - Experimented with how routes are saved, and where people land after signing up depending on the page they signed up from
+   - Started on changes to how tours could be filtered
+   - Started fixing the onboarding setup flows
+
+- Screens: **6 placeholders** (2-col grid, 4:3) — user is supplying real assets:
+  1. `signup banner — control`
+  2. `signup banner — variation 1 (+12%)`
+  3. `signup banner — variation 2`
+  4. `tour page signup banner — experiment (gif)` — animated, needs a still poster frame for print/PDF
+  5. `smart tour page, desktop`
+  6. `smart tour page, mobile`
 - Next case: Verizon Sideview
 
 #### Verizon Sideview
@@ -239,7 +280,11 @@ Template order: back link → title (36px) → premise (20px) → meta tags (mon
 - Screens (placeholders): concept wireframes, destination guide (mobile)
 - Next case: komoot (loops back)
 
-Each case footer: "have questions? get in touch" (email link) + "next: [next case] →" + "all work" (back to home).
+**Case footer** (updated — no separator line above it anymore; "all work" link removed since "work" nav already covers that):
+- Stacked vertically, right-aligned (both lines), in this order top to bottom:
+  1. `next: [next case] →` — only "[next case] →" portion is underlined/a link; the word "next:" itself is plain, non-linked text.
+  2. `have questions? get in touch` — "get in touch" underlined/linked (mailto), "have questions?" plain text. On desktop this line is left-aligned (not right-aligned like the next-case line above it) to align with the case title.
+- Section wrapper: `padding-top:24px; margin-top:24px` (no border-top — removed intentionally), inner stack `gap:36px` between the two lines, `padding-top:4px` above the "next" line.
 
 ---
 
@@ -264,8 +309,6 @@ Each case footer: "have questions? get in touch" (email link) + "next: [next cas
 | 2018–2019 | UnDo app | design, research |
 | 2017–2018 | WoWoenders, Danaeg | concept & design |
 
-**Contact block** (same pattern as Home): "I'm open to product design roles and the occasional project. Interested in working together? Get in touch!" + email/linkedin links.
-
 *Note: a "Now" section (current status bullets) was drafted and explicitly removed — do not add it unless requested.*
 
 ---
@@ -274,28 +317,38 @@ Each case footer: "have questions? get in touch" (email link) + "next: [next cas
 **H1**: Playlist
 **Subhead**: Books I've read recently.
 
-Numbered list (01–09), each row: number, title, author (right-aligned), links out to a Goodreads search URL (`https://www.goodreads.com/search?q=` + encoded "title author"). Row hover = link-color text + top/bottom border highlight, same as Selected work rows.
+List, NOT numbered (numbers removed — do not add 01–09 back), each row: title, author (right-aligned), links out to a Goodreads search URL (`https://www.goodreads.com/search?q=` + encoded "title author"). Row hover = link-color text + top/bottom border highlight, same as Selected work rows' non-inverted hover style.
 
-| # | Title | Author |
-|---|---|---|
-| 01 | The Shortest History of Germany | James Hawes |
-| 02 | The Art of Color: The Subjective Experience and Objective Rationale of Color | Johannes Itten |
-| 03 | Politics of Design | Ruben Pater |
-| 04 | Sapiens | Yuval Noah Harari |
-| 05 | One Simple Thing: A New Look at the Science of Yoga | Eddie Stern |
-| 06 | The Culture Map | Erin Meyer |
-| 07 | Radical Candor | Kim Scott |
-| 08 | Just Enough Research | Erika Hall |
-| 09 | The Anatomy of Color: The Story of Heritage Paints and Pigments | Patrick Baty |
+| Title | Author |
+|---|---|
+| The Shortest History of Germany | James Hawes |
+| The Art of Color: The Subjective Experience and Objective Rationale of Color | Johannes Itten |
+| Politics of Design | Ruben Pater |
+| Sapiens | Yuval Noah Harari |
+| One Simple Thing: A New Look at the Science of Yoga | Eddie Stern |
+| The Culture Map | Erin Meyer |
+| Radical Candor | Kim Scott |
+| Just Enough Research | Erika Hall |
+| The Anatomy of Color: The Story of Heritage Paints and Pigments | Patrick Baty |
 
 Footer text: "last updated august 2026" (update as list changes).
-
-Contact block at bottom, same pattern as Home/About.
 
 ---
 
 ### Global footer (every page)
-> © 2026 all rights reserved
+Rendered once, outside the per-page content, as the last child of the flex column. **No border-top / separator** — removed intentionally, do not add one back.
+
+Order top to bottom:
+1. Contact paragraph — Mono 13.5px, `dim`, line-height 1.65, max-width 34em:
+   > I'm open to product design roles and the occasional project. Interested in working together? Get in touch!
+2. Link row — `display:flex; gap:28px; flex-wrap:wrap; margin-top:24px`, Mono 13.5px:
+   - `email` → `mailto:viki.kovalkovska@gmail.com`
+   - `linkedin ↗` → `https://www.linkedin.com/in/viki-kovalkovska/`
+   Both underlined 1px / offset 3px, `link` color, fill-chip hover.
+3. Copyright — Mono 11.5px, `faint`, `margin-top:36px`:
+   > © 2026 all rights reserved
+
+**Sticky-to-bottom mechanics**: the 760px column is `display:flex; flex-direction:column; min-height:100vh; box-sizing:border-box`. Immediately before the footer sits a flexible spacer `<div style="flex:1 0 auto; min-height:96px"></div>`. On short pages the spacer expands and pushes the footer to the bottom of the viewport; on long pages it collapses to its 96px minimum, guaranteeing breathing room after content. Do not use `position:fixed` — the footer scrolls with the page.
 
 ## Outstanding before launch
 1. Replace all cover/screen placeholders (16:9 case covers ×4, 4:3 screen pairs ×8) with real screenshots.
