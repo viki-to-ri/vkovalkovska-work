@@ -16,9 +16,15 @@ meta:
 # than the 16:9 hatch placeholder.
 cover: "../../assets/komoot/komoot-cover.webp"
 coverAlt: "komoot Iceland hikes guide page shown in a browser window"
-# Experiment-level, not squad-level — the 1.96× / 2.04× figures live in Results.
+# Four, in this order: the two squad-level YoY figures first, then the two
+# experiment results. The YoY pair also appears in Results, on purpose.
 # +12% is the GUIDE page banner, +8% the TOUR page banner. Don't swap them.
+# × is U+00D7, not the letter x.
 metrics:
+  - value: "1.96×"
+    label: "signup rate increase (YoY)"
+  - value: "2.04×"
+    label: "activation rate increase (YoY)"
   - value: "+12%"
     label: "signups — guide page banner vs. control"
   - value: "+8%"
