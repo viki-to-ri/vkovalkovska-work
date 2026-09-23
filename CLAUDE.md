@@ -41,8 +41,9 @@ Two documents in `resources/`, and they split by concern:
   (three modes, numbered lists, an "all work" link). Don't build from them.
 
 `BUILD-SPEC.md` §8 lists what was tried and deliberately reverted. Before
-"improving" something, check it isn't on that list. Most likely to be
-reintroduced by accident: a third colour mode, tonal hierarchy (lighter blues for
+"improving" something, check it isn't on that list. A later handoff can *un*-reject
+an entry — the before/after comparison block came back that way on 2026-09-23 —
+but only the handoff gets to do that. Most likely to be reintroduced by accident: a third colour mode, tonal hierarchy (lighter blues for
 secondary text), numbering on the work or playlist lists, a filled active state
 on the current nav link, a sticky header, a rule above either footer, and a
 per-page contact block or a "have questions?" line in the
@@ -70,6 +71,18 @@ Worker** (not Pages) via `@astrojs/cloudflare`.
 - `imageService: "compile"` runs sharp at build time — the Workers runtime has no
   sharp, so images must be processed during the build.
 
+### Images
+
+Case imagery lives in `src/assets/`, imported through the schema's `image()` so
+Astro emits a srcset at build time. Two things to keep:
+
+- **Animated GIFs must not go through `<Image>`** — sharp flattens them to one
+  frame. `Zoomable.astro` checks `format === "gif"` and passes the original
+  through with a plain `<img>`.
+- **`data-zoom` on a trigger is the full-resolution original**, not a derivative.
+  That is what the lightbox shows, and it is why the unprocessed file is emitted
+  alongside the srcset.
+
 ### Content model
 
 Case studies are an Astro content collection defined in `src/content.config.ts`,
@@ -78,6 +91,19 @@ loaded via `glob()` from `src/content/projects/**/*.{md,mdx}`.
 **The frontmatter is the entire page; the Markdown body is unused.** Every case
 renders through `src/layouts/CaseStudy.astro`, so a new piece of case content
 means a new zod field first, then a change to that layout — never body Markdown.
+
+"Selected screens" has two shapes, chosen by the data. A case with a
+`pageFigure` renders the real figure layout — a sticky-caption split for the
+full-page shot, then a stacked list of `figures` with the caption *above* each
+image. A case without one falls back to the 4:3 placeholder grid built from
+`screens`. Only komoot has imagery today. `pageFigure.title` and `figures[].title`
+are carried in the frontmatter but deliberately never rendered; both title lines
+were removed on purpose.
+
+A `details` body paragraph can be `{ text, note }` instead of a bare string. The
+note renders as its own "→ …" mono line under that paragraph. The prototype
+parsed that phrase back out of the prose with a regex; the handoff asked a real
+CMS to make it a field, so it is one. Don't reintroduce the regex.
 
 `src/lib/projects.ts` is the single source of ordering: `getProjects()` sorts by
 the `order` field and filters drafts in production, and `nextProject()` drives
@@ -139,13 +165,24 @@ Things that look like bugs but aren't:
   opaque.
 - **Mono letter-spacing is not global.** Only uppercase section labels
   (`0.06em`), the header (`0.01em`) and mobile previous-work years (`0.04em`).
+- **The lightbox `<img>` is built in JS, never in the markup.** An `<img>` with
+  an empty `src` fired a failed request on every page load. The overlay ships
+  `hidden` with an empty `.lightbox-inner`.
+- **The figure split needs `minmax(0, …)` on both columns.** Without it the
+  1400×4386 guide-page image's intrinsic width pushes the grid past the 760px
+  column.
+- **`.detail-body li` is `white-space: pre-line`** because one Results bullet
+  breaks across two lines on a literal `\n`. YAML folds every other bullet to a
+  single line, so nothing else is affected.
 - `--accent` and `--hover-tint` are defined per mode but currently unread. They
   are part of the documented palette; leave them.
 
-Client JS is three inlined scripts and nothing else: the pre-paint mode restore
-in `Base.astro`, the toggle handler in `SiteHeader.astro`, and the mobile
-active-row tracker in `index.astro` (home only). The build emits no JS chunks —
-keep it that way unless there's a reason not to.
+Client JS is four inlined scripts and nothing else: the pre-paint mode restore
+in `Base.astro`, the toggle handler in `SiteHeader.astro`, the mobile active-row
+tracker in `index.astro` (home only), and the lightbox in `CaseStudy.astro`. The
+lightbox script ships on every case page but no-ops on the ones with no overlay in
+the markup, which is every case but komoot. The build emits no JS chunks — keep it
+that way unless there's a reason not to.
 
 ## Fonts
 

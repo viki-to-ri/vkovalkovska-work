@@ -27,7 +27,7 @@ details:
   - label: "My role"
     body: >-
       Sole product designer in a small cross-functional team. Led the process
-      end-to-end — research, concept development, prototyping, testing and final UI.
+      end to end — research, concept development, prototyping, testing and final UI.
       Worked closely with engineering and partnered with iHeartMedia's research team
       throughout.
   - label: "Process"
@@ -35,7 +35,7 @@ details:
     bullets:
       - "Early concept validation"
       - "Rapid low → high fidelity iteration and prototyping"
-      - "Frequent co-creation & feedback sessions"
+      - "Frequent co-creation and feedback sessions"
       - "Usability testing to refine assumptions"
   - label: "Results"
     body: >-

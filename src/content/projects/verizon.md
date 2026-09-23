@@ -1,5 +1,5 @@
 ---
-title: "Verizon Sideview"
+title: "Verizon SideView"
 order: 2
 tag: "0→1, cross-platform app"
 description: "Led the 0→1 design of a native cross-platform app that gives sales and support teams a unified view of contact and account data during calls, shipped across iOS, Android, macOS and Windows."

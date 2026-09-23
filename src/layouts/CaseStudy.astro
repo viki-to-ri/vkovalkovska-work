@@ -2,6 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import Base from "./Base.astro";
 import Frame from "../components/Frame.astro";
+import Zoomable from "../components/Zoomable.astro";
 
 interface Props {
 	project: CollectionEntry<"projects">;
@@ -10,6 +11,17 @@ interface Props {
 
 const { project, next } = Astro.props;
 const p = project.data;
+
+/* Two "Selected screens" shapes: the real figure layout when the case has a
+   pageFigure, the 4:3 placeholder grid when it only has captions. */
+const hasFigures = Boolean(p.pageFigure);
+
+/* The column is 760px, so the figures ask for 2x that and the narrow guide-page
+   column for 2x 420px. Each list is capped at the source width in Zoomable. */
+const FIGURE_SIZES = "(max-width: 600px) 100vw, 760px";
+const FIGURE_WIDTHS = [760, 1520, 1800];
+const SPLIT_SIZES = "(max-width: 600px) 100vw, 420px";
+const SPLIT_WIDTHS = [420, 840, 1400];
 ---
 
 <Base page="case" title={p.title} description={p.premise}>
@@ -23,13 +35,21 @@ const p = project.data;
 		{p.meta.map((item) => <span>{item}</span>)}
 	</p>
 
-	<Frame
-		src={p.cover}
-		alt={p.coverAlt}
-		placeholder={p.coverPlaceholder}
-		variant="cover"
-		width={760}
-	/>
+	{
+		/* A real cover crops to 5:3; the placeholder keeps the 16:9 hatch. */
+		p.cover ? (
+			<Zoomable
+				class="cover-image"
+				src={p.cover}
+				alt={p.coverAlt ?? ""}
+				widths={FIGURE_WIDTHS}
+				sizes={FIGURE_SIZES}
+				eager
+			/>
+		) : (
+			<Frame placeholder={p.coverPlaceholder} variant="cover" width={760} />
+		)
+	}
 
 	<section class="section">
 		<span class="label">Overview</span>
@@ -60,7 +80,10 @@ const p = project.data;
 						</summary>
 						<div class="detail-body">
 							{section.body.map((paragraph) => (
-								<p>{paragraph}</p>
+								<>
+									<p>{paragraph.text}</p>
+									{paragraph.note && <p class="detail-note">→ {paragraph.note}</p>}
+								</>
 							))}
 							{section.bullets.length > 0 && (
 								<ul>
@@ -77,18 +100,59 @@ const p = project.data;
 	</section>
 
 	{
-		p.screens.length > 0 && (
+		hasFigures ? (
 			<section class="section">
 				<span class="label">Selected screens</span>
-				<div class="screens">
-					{p.screens.map((screen) => (
+
+				{/* The caption stays pinned while the tall page shot scrolls past it.
+				    pageFigure.title is carried in the data but deliberately unrendered. */}
+				<div class="fig-split">
+					<div class="fig-split-caption">
+						<p>{p.pageFigure!.caption}</p>
+					</div>
+					<figure>
+						<Zoomable
+							src={p.pageFigure!.src}
+							alt={p.pageFigure!.alt}
+							widths={SPLIT_WIDTHS}
+							sizes={SPLIT_SIZES}
+						/>
+					</figure>
+				</div>
+
+				{/* Caption above the image, not below — moved on purpose. */}
+				<div class="figures">
+					{p.figures.map((figure) => (
 						<figure>
-							<Frame placeholder={screen.caption} variant="screen" width={372} />
-							<figcaption class="screen-caption">{screen.caption}</figcaption>
+							<figcaption>
+								<span class="fig-kicker">{figure.kicker}</span>
+								{figure.title && <span class="fig-title">{figure.title}</span>}
+								<span class="fig-caption">{figure.caption}</span>
+							</figcaption>
+							<Zoomable
+								src={figure.src}
+								alt={figure.alt}
+								widths={FIGURE_WIDTHS}
+								sizes={FIGURE_SIZES}
+							/>
 						</figure>
 					))}
 				</div>
 			</section>
+		) : (
+			p.screens.length > 0 && (
+				<section class="section">
+					<span class="label">Selected screens</span>
+					<div class="screens">
+						{p.screens.map((screen) => (
+							<figure>
+								<Frame placeholder={screen.caption} variant="screen" width={372} />
+								<figcaption class="screen-caption">{screen.caption}</figcaption>
+							</figure>
+						))}
+					</div>
+				</section>
+			)
 		)
 	}
 
@@ -106,4 +170,74 @@ const p = project.data;
 			</nav>
 		)
 	}
+
+	{/* The <img> is built in JS, so nothing here requests an empty src on load. */}
+	{
+		hasFigures && (
+			<div
+				class="lightbox"
+				id="lightbox"
+				role="dialog"
+				aria-modal="true"
+				aria-label="Magnified image"
+				tabindex="-1"
+				hidden
+			>
+				<div class="lightbox-inner" />
+			</div>
+		)
+	}
 </Base>
+
+<script>
+	/* Click-to-magnify. One click opens (it was a double-click at first and was
+	   changed on purpose); a click anywhere on the overlay or Escape closes.
+
+	   The keydown listener only exists while the lightbox is open, and focus goes
+	   back to the trigger that opened it. */
+	const overlay = document.getElementById("lightbox");
+	const inner = overlay?.querySelector<HTMLElement>(".lightbox-inner");
+
+	if (overlay && inner) {
+		let opener: HTMLElement | null = null;
+
+		const onKey = (event: KeyboardEvent) => {
+			if (event.key === "Escape") close();
+		};
+
+		function open(trigger: HTMLElement) {
+			const src = trigger.dataset.zoom;
+			if (!src) return;
+
+			const img = document.createElement("img");
+			img.src = src;
+			img.alt = "";
+			inner!.replaceChildren(img);
+
+			overlay!.hidden = false;
+			opener = trigger;
+			document.addEventListener("keydown", onKey);
+			overlay!.focus();
+		}
+
+		function close() {
+			overlay!.hidden = true;
+			inner!.replaceChildren();
+			document.removeEventListener("keydown", onKey);
+			opener?.focus();
+			opener = null;
+		}
+
+		overlay.addEventListener("click", () => close());
+
+		for (const trigger of document.querySelectorAll<HTMLElement>(".zoom")) {
+			trigger.addEventListener("click", () => open(trigger));
+			trigger.addEventListener("keydown", (event) => {
+				if (event.key === "Enter" || event.key === " ") {
+					event.preventDefault();
+					open(trigger);
+				}
+			});
+		}
+	}
+</script>

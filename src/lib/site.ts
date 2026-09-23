@@ -2,7 +2,7 @@
 
 export const SITE_TITLE = "Viki Kovalkovska";
 export const SITE_DESCRIPTION =
-	"Product designer with an engineering background and a soft spot for the details other people skip. Selected work: komoot, Verizon Sideview, rove.me, PodGuides.";
+	"Product designer with an engineering background and a soft spot for the details other people skip. Selected work: komoot, Verizon SideView, rove.me, PodGuides.";
 
 export const EMAIL = "viki.kovalkovska@gmail.com";
 export const LINKEDIN = "https://www.linkedin.com/in/viki-kovalkovska/";

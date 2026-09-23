@@ -1,0 +1,56 @@
+---
+import { Image } from "astro:assets";
+
+interface Props {
+	src: ImageMetadata;
+	alt: string;
+	/** Emitted srcset widths, largest last. Capped at the source width. */
+	widths: number[];
+	sizes: string;
+	/** Only the cover is above the fold; every figure below it lazy-loads. */
+	eager?: boolean;
+	class?: string;
+}
+
+const { src, alt, widths, sizes, eager = false, class: className } = Astro.props;
+
+/* Animated GIFs must not go through sharp — it flattens them to a single frame.
+   The import is already the optimised asset, so pass the original through. */
+const animated = src.format === "gif";
+const out = widths.filter((width) => width <= src.width);
+
+/* `data-zoom` is the full-resolution original, which is what the lightbox shows
+   at up to 1400px wide. The trigger is a div, so it needs the button role,
+   tab stop and Enter/Space handling the handoff asks for. */
+---
+
+<div
+	class:list={["zoom", className]}
+	data-zoom={src.src}
+	role="button"
+	tabindex="0"
+	title="Click to magnify"
+>
+	{
+		animated ? (
+			<img
+				src={src.src}
+				alt={alt}
+				width={src.width}
+				height={src.height}
+				loading={eager ? "eager" : "lazy"}
+				decoding="async"
+			/>
+		) : (
+			<Image
+				src={src}
+				alt={alt}
+				widths={out.length ? out : [src.width]}
+				sizes={sizes}
+				loading={eager ? "eager" : "lazy"}
+				fetchpriority={eager ? "high" : "auto"}
+				decoding="async"
+			/>
+		)
+	}
+</div>

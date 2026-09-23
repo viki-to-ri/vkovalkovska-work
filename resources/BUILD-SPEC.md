@@ -431,6 +431,10 @@ Verify at **390px** and **1440px** — those are the two widths the design was t
 
 Do not reintroduce these; each was explicitly reverted.
 
+*A before/after comparison block on the komoot case used to be on this list. The
+2026-09-23 handoff brought it back as figure 1 of Selected screens, so it has been
+removed from the list.*
+
 - A third "cold day" theme with neutral gray text.
 - Tonal hierarchy (three shades of blue) for text in blue-day mode.
 - A `#EBFABD` background for day mode.
@@ -443,14 +447,15 @@ Do not reintroduce these; each was explicitly reverted.
 - A "have questions? get in touch" line in the case footer.
 - The hero intro paragraph "I'm looking for my next role right now…".
 - A "Now" section on About.
-- A before/after image comparison block on the komoot case.
 - Page-transition fade on every route (only Home keeps `rise`).
 
 ---
 
 ## 9. Outstanding before launch
 
-1. Replace every placeholder with real imagery: 4 × 16:9 case covers, 8 × 4:3 screens.
+1. Replace the remaining placeholders with real imagery: 3 × 16:9 case covers and
+   6 × 4:3 screens for Verizon SideView, rove.me and PodGuides. komoot has its own
+   5:3 cover and the figure layout as of 2026-09-23.
 2. Confirm the Klim Söhne commercial license covers a public site.
 3. Device-test at 390px on real hardware (the responsive rules were tuned in a browser).
 4. Verify `viki.kovalkovska@gmail.com` and the LinkedIn URL.

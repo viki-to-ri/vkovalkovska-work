@@ -19,7 +19,7 @@ BUILD-SPEC wins, and its §8 lists what was tried and deliberately reverted.
 - **`astro:assets`** for images, `@astrojs/sitemap` for the sitemap.
 - Deployed as a **Cloudflare Worker** serving static assets.
 
-Three small scripts ship to the browser, all inlined into the HTML rather than
+Four small scripts ship to the browser, all inlined into the HTML rather than
 emitted as separate files — the build produces no client JS chunks:
 
 | Script | Where | Runs on |
@@ -27,8 +27,10 @@ emitted as separate files — the build produces no client JS chunks:
 | Restore the stored mode before first paint | inline in `<head>`, `Base.astro` | every page |
 | Mode toggle click handler | `SiteHeader.astro` | every page |
 | Scroll-driven active row (touch stand-in for hover) | `index.astro` | home only |
+| Click-to-magnify lightbox | `CaseStudy.astro` | case studies |
 
-Nothing else is interactive.
+The lightbox script ships on every case page but no-ops where the markup has no
+overlay, which today is every case but komoot. Nothing else is interactive.
 
 **Node 22+ is required** — wrangler refuses to start below it.
 
@@ -79,13 +81,15 @@ src/
     SiteHeader.astro         name, nav, mode toggle (+ its client script)
     SiteFooter.astro         contact copy, email/LinkedIn, the © line
     WorkRow.astro            one row on the home index
-    Frame.astro              cover/screen image or placeholder ground
+    Frame.astro              cover/screen placeholder ground
+    Zoomable.astro           a real image, wrapped as a lightbox trigger
   data/
     playlist.ts              books + Goodreads search helper
     previous-work.ts         the About page ledger
   lib/
     site.ts                  title, description, email, LinkedIn, shared copy
     projects.ts              ordering + next-case cycling
+  assets/komoot/             case imagery, emitted as a srcset at build time
   styles/global.css          modes, tokens, reset, every component style
 public/fonts/                self-hosted Söhne woff2
 resources/                   build spec + handoff (font downloads are gitignored)
@@ -104,7 +108,7 @@ Each case study is one Markdown file in `src/content/projects/`. The frontmatter
 
 | Field              | Required | Notes                                                          |
 | :----------------- | :------- | :------------------------------------------------------------- |
-| `title`            | yes      | e.g. `"Verizon Sideview"`                                       |
+| `title`            | yes      | e.g. `"Verizon SideView"`                                       |
 | `order`            | yes      | Index order **and** the next-case loop — not the date           |
 | `tag`              | yes      | Mono line beside the title on the index row                     |
 | `description`      | yes      | The one outcome-line on the index row                           |
@@ -114,14 +118,34 @@ Each case study is one Markdown file in `src/content/projects/`. The frontmatter
 | `summary`          | yes      | The Overview paragraph                                          |
 | `details`          | yes      | Array of `{ label, body?, bullets? }` — one `<details>` each    |
 | `metrics`          | no       | `{ value, label }` — the seam grid above the summary            |
+| `pageFigure`       | no       | `{ caption, alt, src, title? }` — the sticky-caption split      |
+| `figures`          | no       | `{ kicker, caption, alt, src, title? }` — the stacked list      |
 | `screens`          | no       | `{ caption }` — one placeholder frame each                      |
-| `cover`            | no       | Relative path to a 16:9 image, e.g. `"./covers/roveme.webp"`    |
+| `cover`            | no       | Relative path to an image; renders at 5:3, e.g. `"../../assets/komoot/komoot-cover.webp"` |
 | `coverAlt`         | no       | Describe what the interface *does*, not "screenshot of X"       |
 | `coverPlaceholder` | no       | Caption shown when there's no cover; defaults to `cover image`  |
 | `draft`            | no       | Hidden in production builds, visible in `dev`                   |
 
 Cases render in `order`, and the footer's "next" link cycles from the last back
 to the first.
+
+**A `details` body paragraph** is either a plain string or `{ text, note }`. The
+`note` renders as its own `→ …` mono line under that paragraph — it is a field
+rather than a phrase parsed back out of the prose, which is what the handoff
+asked a real CMS to do.
+
+**"Selected screens" has two shapes, chosen by the data.** Give a case a
+`pageFigure` and it renders the figure layout: a caption that stays pinned beside
+the full-length page shot, then the `figures` list with each caption *above* its
+image. Leave `pageFigure` out and it falls back to the 4:3 placeholder grid built
+from `screens`. The `title` on a `pageFigure` or a figure is carried but never
+rendered — both title lines were removed on purpose.
+
+**Images** live in `src/assets/` and are imported through the schema's `image()`,
+so Astro emits a srcset at build time. Two things to keep in mind: an animated
+GIF must not go through `<Image>` (sharp flattens it to one frame — `Zoomable`
+detects `format === "gif"` and passes the original through), and the lightbox
+shows the full-resolution original rather than a srcset derivative.
 
 ## Colour modes
 
@@ -167,7 +191,13 @@ will *get* (moon in day, sun in night), and its `aria-label`/`title` say so.
   through a 1px `gap` to draw the lines. Cells carry no border and must stay
   opaque, or the container floods them.
 - **Image frames** use a 45° hatch at 4.5% neutral grey, which reads identically
-  in both modes and is simply covered up once a real image lands.
+  in both modes. A case with a real cover skips the frame entirely.
+- **Real case images are lightbox triggers.** One click opens; a click anywhere
+  on the overlay or `Escape` closes. The overlay itself scrolls, so a tall image
+  can be read at full width. Its `<img>` is built in JS and never sits in the
+  markup — an empty `src` there fired a failed request on every page load.
+- **The figure split needs `minmax(0, …)` on both columns**, or the tall
+  guide-page image's intrinsic width pushes the grid past the 760px column.
 - `.page` is a `min-height: 100vh` flex column with `flex: 1 0 auto` and a 96px
   bottom padding on `main`, so the footer sits at the bottom of the viewport on
   short pages and scrolls away on long ones, never closer than 96px to the
@@ -210,14 +240,18 @@ The trial download itself is gitignored rather than committed.
 
 ## Known gaps
 
-- **Case imagery is all placeholders** — four 16:9 covers and eight 4:3 screens
-  render as captioned frames. No cover images are in the repo: the earlier 3:2
-  `.webp` set was removed, since it didn't match the 16:9 frames and is being
-  redone. Drop new ones into `src/content/projects/covers/` and set `cover:` in
-  each project's frontmatter; the schema and `Frame.astro` already support it.
-- **Screen captions render twice** — once inside the frame as its placeholder
-  text, once as the `<figcaption>` below it. The spec doesn't say which should
-  go.
+- **Three cases are still placeholders.** komoot has its own 5:3 cover and the
+  full figure layout; Verizon SideView, rove.me and PodGuides still render three
+  16:9 covers and six 4:3 screens as captioned frames. Drop new images into
+  `src/assets/`, set `cover:` for a cover, and add `pageFigure` + `figures` to
+  move a case onto the figure layout.
+- **Screen captions render twice** on the placeholder cases — once inside the
+  frame as its placeholder text, once as the `<figcaption>` below it. The spec
+  doesn't say which should go. The figure layout doesn't have this problem.
+- **The komoot GIF ships as a GIF** (1.1 MB, lazy-loaded). The handoff suggested
+  converting it to a muted looping `<video>` with a still poster and a
+  `prefers-reduced-motion` fallback; that changes the markup away from the spec's
+  figure template, so it hasn't been done.
 - **Fonts** — see above; the licence is the blocker for going public.
 - The 600px breakpoint was verified in a browser at 390px and 1440px, but not on
   real hardware.
