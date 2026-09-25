@@ -18,12 +18,14 @@ const projects = defineCollection({
 			description: z.string(), // the one outcome-line
 			years: z.string(), // "2024–25"
 
-			// Case header. With `cover` the image renders at 5:3; without it, the
-			// 16:9 hatch placeholder does. Nothing else keys off that difference.
+			// Case header. With `cover` the image renders at `coverRatio` (5:3 unless
+			// the case says otherwise — Verizon's 16:9 source would lose the tops of
+			// its phones at 5:3); without it, the 16:9 hatch placeholder does.
 			premise: z.string(),
 			meta: z.array(z.string()), // role · dates · tools, rendered dot-separated
 			cover: image().optional(),
 			coverAlt: z.string().optional(),
+			coverRatio: z.string().default("5 / 3"), // a CSS aspect-ratio
 			coverPlaceholder: z.string().default("cover image"),
 
 			// Overview: an optional metrics grid above the summary paragraph.
@@ -60,9 +62,14 @@ const projects = defineCollection({
 
 			// "Selected screens". Two shapes, picked by what the case supplies:
 			//
-			//   `pageFigure` + `figures` — the real figure layout: one sticky-caption
-			//   split for a full-page shot, then a stacked list of captioned figures.
+			//   `figures` — the real figure layout: a list of captioned figures,
+			//   led by an optional sticky-caption split for a full-page shot
+			//   (`pageFigure`, komoot only).
 			//   `screens` — the 4:3 placeholder grid, for cases with no imagery yet.
+			//
+			// A figure is one `src`/`alt` or several `imgs` under the same kicker;
+			// either way the layout gets `imgs`. Several sit side by side unless
+			// `stacked` puts them in one column.
 			//
 			// `pageFigure.title` and `figures[].title` are carried but deliberately
 			// not rendered; the handoff removed both title lines on purpose.
@@ -76,13 +83,23 @@ const projects = defineCollection({
 				.optional(),
 			figures: z
 				.array(
-					z.object({
-						kicker: z.string(),
-						title: z.string().optional(),
-						caption: z.string(),
-						alt: z.string(),
-						src: image(),
-					}),
+					z
+						.object({
+							kicker: z.string(),
+							title: z.string().optional(),
+							caption: z.string(),
+							alt: z.string().optional(),
+							src: image().optional(),
+							imgs: z.array(z.object({ src: image(), alt: z.string() })).default([]),
+							stacked: z.boolean().default(false),
+						})
+						.refine((figure) => (figure.src ? figure.alt !== undefined : figure.imgs.length > 0), {
+							message: "A figure needs `src` with `alt`, or at least one entry in `imgs`.",
+						})
+						.transform(({ src, alt, imgs, ...figure }) => ({
+							...figure,
+							imgs: src ? [{ src, alt: alt ?? "" }, ...imgs] : imgs,
+						})),
 				)
 				.default([]),
 			screens: z.array(z.object({ caption: z.string() })).default([]),

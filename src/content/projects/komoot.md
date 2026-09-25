@@ -12,8 +12,7 @@ meta:
   - "product designer, acquisition (SEO) squad"
   - "jun 2024 – sep 2025"
   - "figma, dovetail"
-# The only case with a real cover, so the only one that renders at 5:3 rather
-# than the 16:9 hatch placeholder.
+# Renders at the default 5:3 coverRatio. Verizon sets its own 16:9.
 cover: "../../assets/komoot/komoot-cover.webp"
 coverAlt: "komoot Iceland hikes guide page shown in a browser window"
 # Four, in this order: the two squad-level YoY figures first, then the two

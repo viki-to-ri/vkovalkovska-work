@@ -12,9 +12,19 @@ interface Props {
 const { project, next } = Astro.props;
 const p = project.data;
 
-/* Two "Selected screens" shapes: the real figure layout when the case has a
-   pageFigure, the 4:3 placeholder grid when it only has captions. */
-const hasFigures = Boolean(p.pageFigure);
+/* Two "Selected screens" shapes: the real figure layout when the case has
+   figures, the 4:3 placeholder grid when it only has captions. The sticky split
+   is gated on its own — Verizon has figures but no full-page shot. */
+const hasFigures = p.figures.length > 0;
+const hasPageFigure = Boolean(p.pageFigure);
+
+/* Every magnify trigger on the page, in document order: cover, page figure, then
+   each figure's images. The lightbox steps through them in that same order, so
+   it only draws its arrows when there is somewhere to step to. */
+const galleryCount =
+	(p.cover ? 1 : 0) +
+	(hasPageFigure ? 1 : 0) +
+	p.figures.reduce((count, figure) => count + figure.imgs.length, 0);
 
 /* The column is 760px, so the figures ask for 2x that and the narrow guide-page
    column for 2x 420px. Each list is capped at the source width in Zoomable. */
@@ -36,10 +46,12 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 	</p>
 
 	{
-		/* A real cover crops to 5:3; the placeholder keeps the 16:9 hatch. */
+		/* A real cover takes its case's ratio (5:3 by default); the placeholder
+		   keeps the 16:9 hatch. */
 		p.cover ? (
 			<Zoomable
 				class="cover-image"
+				style={`--cover-ratio: ${p.coverRatio}`}
 				src={p.cover}
 				alt={p.coverAlt ?? ""}
 				widths={FIGURE_WIDTHS}
@@ -106,21 +118,24 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 
 				{/* The caption stays pinned while the tall page shot scrolls past it.
 				    pageFigure.title is carried in the data but deliberately unrendered. */}
-				<div class="fig-split">
-					<div class="fig-split-caption">
-						<p>{p.pageFigure!.caption}</p>
+				{p.pageFigure && (
+					<div class="fig-split">
+						<div class="fig-split-caption">
+							<p>{p.pageFigure.caption}</p>
+						</div>
+						<figure>
+							<Zoomable
+								src={p.pageFigure.src}
+								alt={p.pageFigure.alt}
+								widths={SPLIT_WIDTHS}
+								sizes={SPLIT_SIZES}
+							/>
+						</figure>
 					</div>
-					<figure>
-						<Zoomable
-							src={p.pageFigure!.src}
-							alt={p.pageFigure!.alt}
-							widths={SPLIT_WIDTHS}
-							sizes={SPLIT_SIZES}
-						/>
-					</figure>
-				</div>
+				)}
 
-				{/* Caption above the image, not below — moved on purpose. */}
+				{/* Caption above the images, not below — moved on purpose. One kicker
+				    per figure however many images sit under it. */}
 				<div class="figures">
 					{p.figures.map((figure) => (
 						<figure>
@@ -129,12 +144,16 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 								{figure.title && <span class="fig-title">{figure.title}</span>}
 								<span class="fig-caption">{figure.caption}</span>
 							</figcaption>
-							<Zoomable
-								src={figure.src}
-								alt={figure.alt}
-								widths={FIGURE_WIDTHS}
-								sizes={FIGURE_SIZES}
-							/>
+							<div class:list={["fig-images", { "fig-images--stacked": figure.stacked }]}>
+								{figure.imgs.map((img) => (
+									<Zoomable
+										src={img.src}
+										alt={img.alt}
+										widths={FIGURE_WIDTHS}
+										sizes={FIGURE_SIZES}
+									/>
+								))}
+							</div>
 						</figure>
 					))}
 				</div>
@@ -173,7 +192,7 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 
 	{/* The <img> is built in JS, so nothing here requests an empty src on load. */}
 	{
-		hasFigures && (
+		galleryCount > 0 && (
 			<div
 				class="lightbox"
 				id="lightbox"
@@ -184,6 +203,17 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 				hidden
 			>
 				<div class="lightbox-inner" />
+				{galleryCount > 1 && (
+					<>
+						<button type="button" class="lightbox-nav lightbox-prev" aria-label="Previous image">
+							←
+						</button>
+						<button type="button" class="lightbox-nav lightbox-next" aria-label="Next image">
+							→
+						</button>
+					</>
+				)}
+				<p class="sr-only" aria-live="polite" />
 			</div>
 		)
 	}
@@ -193,26 +223,62 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 	/* Click-to-magnify. One click opens (it was a double-click at first and was
 	   changed on purpose); a click anywhere on the overlay or Escape closes.
 
-	   The keydown listener only exists while the lightbox is open, and focus goes
-	   back to the trigger that opened it. */
+	   The gallery is every trigger on the page in document order, and ←/→ (keys
+	   or buttons) step through it, wrapping at both ends. Images swap instantly,
+	   and the lightbox always shows `data-zoom`, the full-resolution original.
+
+	   The keydown listener only exists while the lightbox is open, Tab stays
+	   inside the dialog, and focus goes back to the trigger that opened it. */
 	const overlay = document.getElementById("lightbox");
 	const inner = overlay?.querySelector<HTMLElement>(".lightbox-inner");
 
 	if (overlay && inner) {
+		const triggers = [...document.querySelectorAll<HTMLElement>(".zoom")];
+		const buttons = [...overlay.querySelectorAll<HTMLButtonElement>(".lightbox-nav")];
+		const status = overlay.querySelector<HTMLElement>("[aria-live]");
+		let current = -1;
 		let opener: HTMLElement | null = null;
 
 		const onKey = (event: KeyboardEvent) => {
 			if (event.key === "Escape") close();
+			else if (event.key === "ArrowRight") {
+				event.preventDefault();
+				step(1);
+			} else if (event.key === "ArrowLeft") {
+				event.preventDefault();
+				step(-1);
+			} else if (event.key === "Tab") {
+				/* Cycle between the two buttons, or pin focus on the overlay when
+				   there are none. */
+				event.preventDefault();
+				const at = buttons.indexOf(document.activeElement as HTMLButtonElement);
+				const next = buttons[(at + (event.shiftKey ? -1 : 1) + buttons.length) % buttons.length];
+				(next ?? overlay!).focus();
+			}
 		};
 
-		function open(trigger: HTMLElement) {
-			const src = trigger.dataset.zoom;
+		function show(index: number) {
+			const src = triggers[index]?.dataset.zoom;
 			if (!src) return;
 
 			const img = document.createElement("img");
 			img.src = src;
 			img.alt = "";
 			inner!.replaceChildren(img);
+			overlay!.scrollTop = 0; // the guide page is tall; don't land mid-scroll on the next image
+			current = index;
+			if (status && triggers.length > 1) {
+				status.textContent = `Image ${index + 1} of ${triggers.length}`;
+			}
+		}
+
+		function step(direction: number) {
+			show((current + direction + triggers.length) % triggers.length);
+		}
+
+		function open(trigger: HTMLElement) {
+			show(triggers.indexOf(trigger));
+			if (current < 0) return;
 
 			overlay!.hidden = false;
 			opener = trigger;
@@ -223,6 +289,8 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 		function close() {
 			overlay!.hidden = true;
 			inner!.replaceChildren();
+			if (status) status.textContent = "";
+			current = -1;
 			document.removeEventListener("keydown", onKey);
 			opener?.focus();
 			opener = null;
@@ -230,7 +298,16 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 
 		overlay.addEventListener("click", () => close());
 
-		for (const trigger of document.querySelectorAll<HTMLElement>(".zoom")) {
+		/* stopPropagation, or the overlay's own click handler closes the lightbox. */
+		for (const button of buttons) {
+			const direction = button.classList.contains("lightbox-prev") ? -1 : 1;
+			button.addEventListener("click", (event) => {
+				event.stopPropagation();
+				step(direction);
+			});
+		}
+
+		for (const trigger of triggers) {
 			trigger.addEventListener("click", () => open(trigger));
 			trigger.addEventListener("keydown", (event) => {
 				if (event.key === "Enter" || event.key === " ") {

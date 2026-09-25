@@ -10,9 +10,10 @@ interface Props {
 	/** Only the cover is above the fold; every figure below it lazy-loads. */
 	eager?: boolean;
 	class?: string;
+	style?: string;
 }
 
-const { src, alt, widths, sizes, eager = false, class: className } = Astro.props;
+const { src, alt, widths, sizes, eager = false, class: className, style } = Astro.props;
 
 /* Animated GIFs must not go through sharp — it flattens them to a single frame.
    The import is already the optimised asset, so pass the original through. */
@@ -26,6 +27,7 @@ const out = widths.filter((width) => width <= src.width);
 
 <div
 	class:list={["zoom", className]}
+	style={style}
 	data-zoom={src.src}
 	role="button"
 	tabindex="0"

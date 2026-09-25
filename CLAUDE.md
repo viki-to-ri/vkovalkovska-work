@@ -92,13 +92,18 @@ loaded via `glob()` from `src/content/projects/**/*.{md,mdx}`.
 renders through `src/layouts/CaseStudy.astro`, so a new piece of case content
 means a new zod field first, then a change to that layout — never body Markdown.
 
-"Selected screens" has two shapes, chosen by the data. A case with a
-`pageFigure` renders the real figure layout — a sticky-caption split for the
-full-page shot, then a stacked list of `figures` with the caption *above* each
-image. A case without one falls back to the 4:3 placeholder grid built from
-`screens`. Only komoot has imagery today. `pageFigure.title` and `figures[].title`
-are carried in the frontmatter but deliberately never rendered; both title lines
-were removed on purpose.
+"Selected screens" has two shapes, chosen by the data. A case with `figures`
+renders the real figure layout — a stacked list with the caption *above* the
+images, led by a sticky-caption split for a full-page shot when the case also has
+a `pageFigure` (komoot only). A case with no figures falls back to the 4:3
+placeholder grid built from `screens`. komoot and Verizon have imagery today.
+A figure is one `src`/`alt` or several `imgs` under one kicker; the schema
+normalises both to `imgs`, which sit side by side unless `stacked: true`.
+`pageFigure.title` and `figures[].title` are carried in the frontmatter but
+deliberately never rendered; both title lines were removed on purpose.
+
+The cover renders at the case's `coverRatio` (default `5 / 3`; Verizon sets
+`16 / 9` because its source is exactly that and 5:3 crops the phones).
 
 A `details` body paragraph can be `{ text, note }` instead of a bare string. The
 note renders as its own "→ …" mono line under that paragraph. The prototype
@@ -181,7 +186,8 @@ Client JS is four inlined scripts and nothing else: the pre-paint mode restore
 in `Base.astro`, the toggle handler in `SiteHeader.astro`, the mobile active-row
 tracker in `index.astro` (home only), and the lightbox in `CaseStudy.astro`. The
 lightbox script ships on every case page but no-ops on the ones with no overlay in
-the markup, which is every case but komoot. The build emits no JS chunks — keep it
+the markup, which is every case without a cover or figures. Its gallery is every
+`.zoom` trigger in document order, so ←/→ follow the page. The build emits no JS chunks — keep it
 that way unless there's a reason not to.
 
 ## Fonts
