@@ -1,5 +1,6 @@
 ---
 import { Image } from "astro:assets";
+import { IMAGE_QUALITY, widthsFor } from "../lib/images";
 
 interface Props {
 	src: ImageMetadata;
@@ -7,7 +8,9 @@ interface Props {
 	/** Emitted srcset widths, largest last. Capped at the source width. */
 	widths: number[];
 	sizes: string;
-	/** Only the cover is above the fold; every figure below it lazy-loads. */
+	/** Only the cover is above the fold; every figure below it lazy-loads. The
+	    eager cover also decodes synchronously — async decoding left a blank frame
+	    when switching between cases. */
 	eager?: boolean;
 	class?: string;
 	style?: string;
@@ -18,7 +21,6 @@ const { src, alt, widths, sizes, eager = false, class: className, style } = Astr
 /* Animated GIFs must not go through sharp — it flattens them to a single frame.
    The import is already the optimised asset, so pass the original through. */
 const animated = src.format === "gif";
-const out = widths.filter((width) => width <= src.width);
 
 /* `data-zoom` is the full-resolution original, which is what the lightbox shows
    at up to 1400px wide. The trigger is a div, so it needs the button role,
@@ -41,17 +43,18 @@ const out = widths.filter((width) => width <= src.width);
 				width={src.width}
 				height={src.height}
 				loading={eager ? "eager" : "lazy"}
-				decoding="async"
+				decoding={eager ? "sync" : "async"}
 			/>
 		) : (
 			<Image
 				src={src}
 				alt={alt}
-				widths={out.length ? out : [src.width]}
+				widths={widthsFor(src, widths)}
+				quality={IMAGE_QUALITY}
 				sizes={sizes}
 				loading={eager ? "eager" : "lazy"}
 				fetchpriority={eager ? "high" : "auto"}
-				decoding="async"
+				decoding={eager ? "sync" : "async"}
 			/>
 		)
 	}

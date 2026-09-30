@@ -1,10 +1,13 @@
 ---
+import { Image } from "astro:assets";
 import Base from "../layouts/Base.astro";
-import WorkRow from "../components/WorkRow.astro";
+import CoverPreload from "../components/CoverPreload.astro";
 import { getProjects } from "../lib/projects";
+import { COLUMN_SIZES, IMAGE_QUALITY, widthsFor } from "../lib/images";
 import { AVAILABILITY } from "../lib/site";
 
 const projects = await getProjects();
+const total = String(projects.length).padStart(2, "0");
 ---
 
 <Base page="home">
@@ -22,73 +25,248 @@ const projects = await getProjects();
 		</p>
 	</div>
 
-	{/* The id is the "work" nav link's target — see SiteHeader. */}
-	<section class="section" id="selected-work">
+	{/* One project per frame. The id is where a case page's "← back" lands. */}
+	<section class="section work" id="selected-work">
 		<span class="label">Selected work</span>
-		<div class="rows--work">
-			{
-				projects.map((project) => (
-					<WorkRow
-						title={project.data.title}
-						tag={project.data.tag}
-						description={project.data.description}
-						years={project.data.years}
-						href={`/work/${project.id}`}
-					/>
-				))
-			}
+
+		<div class="work-slider" role="region" aria-roledescription="carousel" aria-label="Selected work">
+			<div class="work-viewport" data-work-viewport>
+				<div class="work-rail" data-work-rail>
+					{
+						projects.map((project, index) => (
+							<a
+								class="work-card"
+								href={`/work/${project.id}`}
+								data-work-card={project.id}
+								aria-label={`${project.data.title} case study`}
+								draggable="false"
+							>
+								<div class:list={["work-cover", { "work-cover--empty": !project.data.cover }]}>
+									{project.data.cover && (
+										<Image
+											src={project.data.cover}
+											alt={project.data.coverAlt ?? ""}
+											widths={widthsFor(project.data.cover)}
+											quality={IMAGE_QUALITY}
+											sizes={COLUMN_SIZES}
+											loading={index === 0 ? "eager" : "lazy"}
+											decoding="async"
+											draggable="false"
+										/>
+									)}
+								</div>
+								<div class="work-meta">
+									<div class="work-main">
+										<div class="work-head">
+											<span class="work-name">{project.data.title}</span>
+											<span class="work-tag">{project.data.tag}</span>
+										</div>
+										<p class="work-summary">{project.data.description}</p>
+										<span class="work-cta">
+											read case study <span>→</span>
+										</span>
+									</div>
+									<span class="work-years">{project.data.years}</span>
+								</div>
+							</a>
+						))
+					}
+				</div>
+			</div>
+
+			{/* No dots, no progress bar, no "swipe" or "next →" text — all removed. */}
+			<div class="work-footer">
+				<span class="work-counter" data-work-counter aria-live="polite">01 / {total}</span>
+				<div class="work-arrows">
+					<button type="button" data-work-step="-1" aria-label="Previous project">
+						<svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true">
+							<path
+								d="M6 1 1 6l5 5"
+								stroke="currentColor"
+								stroke-width="1.2"
+								stroke-linecap="round"
+								stroke-linejoin="round"></path>
+						</svg>
+					</button>
+					<button type="button" data-work-step="1" aria-label="Next project">
+						<svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true">
+							<path
+								d="M1 1l5 5-5 5"
+								stroke="currentColor"
+								stroke-width="1.2"
+								stroke-linecap="round"
+								stroke-linejoin="round"></path>
+						</svg>
+					</button>
+				</div>
+			</div>
 		</div>
 	</section>
+
+	<CoverPreload />
 </Base>
 
 <script>
-	/* Touch devices have no hover, so on narrow viewports the row nearest the top
-	   third of the screen carries the inverted state instead.
+	/* The Selected work slider.
 
-	   Exactly one row is ever active — an IntersectionObserver band was tried first
-	   and lit several rows at once, so this measures distance to a target line and
-	   keeps the single nearest row. */
-	const rows = Array.from(document.querySelectorAll<HTMLElement>(".row--work"));
+	   - Chevrons: a neighbouring card slides; a wrap (last → first, first → last)
+	     fades out, jumps and fades back in, so it never slides across every card.
+	   - Pointer drag (touch and mouse): the axis is decided after 6px. Vertical is
+	     left to the page (`touch-action: pan-y`); horizontal follows the pointer
+	     1:1, rubber-banded ×0.3 past either end. It advances on 18% of the width or
+	     a 0.45px/ms flick, never wraps, and a drag never opens the card it began on.
+	   - Trackpad: horizontal wheel accumulates to 40px, moves one card, then locks
+	     for 800ms. Never wraps.
+	   - `?work=<id>` (the case pages' "← back") opens on that card with no motion. */
+	const viewport = document.querySelector<HTMLElement>("[data-work-viewport]");
+	const rail = document.querySelector<HTMLElement>("[data-work-rail]");
+	const counter = document.querySelector<HTMLElement>("[data-work-counter]");
 
-	if (rows.length) {
-		const clear = () => rows.forEach((row) => row.removeAttribute("data-row-active"));
+	if (viewport && rail && counter) {
+		const cards = [...rail.querySelectorAll<HTMLAnchorElement>("[data-work-card]")];
+		const count = cards.length;
+		const pad = (n: number) => String(n).padStart(2, "0");
+		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+		let index = 0;
 
-		const update = () => {
-			if (window.innerWidth > 600) {
-				clear();
+		/* `still` drops the transform transition, for drags and jumps. */
+		function place(dragPx = 0, still = false) {
+			rail!.classList.toggle("is-still", still);
+			rail!.style.transform = `translate3d(calc(${-index * 100}% - ${index * 40}px + ${dragPx}px), 0, 0)`;
+		}
+
+		function settle() {
+			counter!.textContent = `${pad(index + 1)} / ${pad(count)}`;
+			/* Only the visible card is reachable by Tab or a screen reader. */
+			cards.forEach((card, i) => (card.inert = i !== index));
+		}
+
+		function jump(to: number) {
+			index = to;
+			place(0, true);
+			settle();
+		}
+
+		function go(to: number) {
+			if (to >= 0 && to < count) {
+				if (reduceMotion.matches) return jump(to);
+				index = to;
+				place();
+				settle();
 				return;
 			}
 
-			clear();
+			const wrapped = (to + count) % count;
+			if (reduceMotion.matches) return jump(wrapped);
 
-			/* Required: on a short list the last row can never reach the 35% line, so
-			   it would never activate. At the bottom of the page, force it. */
-			const atBottom =
-				window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
-			if (atBottom) {
-				rows[rows.length - 1].setAttribute("data-row-active", "");
-				return;
+			rail!.style.opacity = "0";
+			window.setTimeout(() => {
+				jump(wrapped);
+				requestAnimationFrame(() =>
+					requestAnimationFrame(() => {
+						rail!.classList.remove("is-still");
+						rail!.style.opacity = "1";
+					}),
+				);
+			}, 220);
+		}
+
+		const start = cards.findIndex(
+			(card) => card.dataset.workCard === new URLSearchParams(location.search).get("work"),
+		);
+		jump(Math.max(0, start));
+
+		for (const button of document.querySelectorAll<HTMLButtonElement>("[data-work-step]")) {
+			button.addEventListener("click", () => go(index + Number(button.dataset.workStep)));
+		}
+
+		/* Drag. */
+		let drag: { id: number; x: number; y: number; t: number; dx: number; axis?: "x" | "y" } | null =
+			null;
+		let dragged = false;
+
+		viewport.addEventListener("pointerdown", (event) => {
+			if (event.pointerType === "mouse" && event.button !== 0) return;
+			drag = { id: event.pointerId, x: event.clientX, y: event.clientY, t: performance.now(), dx: 0 };
+			dragged = false;
+		});
+
+		viewport.addEventListener("pointermove", (event) => {
+			if (!drag || drag.id !== event.pointerId) return;
+			const dx = event.clientX - drag.x;
+			const dy = event.clientY - drag.y;
+
+			if (!drag.axis) {
+				if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
+				drag.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+				if (drag.axis === "x") viewport.setPointerCapture(event.pointerId);
 			}
+			if (drag.axis !== "x") return;
 
-			const targetY = window.innerHeight * 0.35;
-			let closest: HTMLElement | null = null;
-			let closestDist = Infinity;
+			dragged = true;
+			drag.dx = dx;
+			const atEdge = (index === 0 && dx > 0) || (index === count - 1 && dx < 0);
+			place(atEdge ? dx * 0.3 : dx, true);
+		});
 
-			for (const row of rows) {
-				const rect = row.getBoundingClientRect();
-				if (rect.bottom < 0 || rect.top > window.innerHeight) continue;
-				const dist = Math.abs(rect.top + rect.height / 2 - targetY);
-				if (dist < closestDist) {
-					closestDist = dist;
-					closest = row;
-				}
+		const release = (event: PointerEvent) => {
+			const d = drag;
+			drag = null;
+			if (!d || d.id !== event.pointerId || d.axis !== "x") return;
+
+			const width = rail.offsetWidth || 1;
+			const velocity = d.dx / Math.max(1, performance.now() - d.t);
+			let to = index;
+			if ((d.dx < -width * 0.18 || velocity < -0.45) && index < count - 1) to++;
+			else if ((d.dx > width * 0.18 || velocity > 0.45) && index > 0) to--;
+
+			if (reduceMotion.matches) jump(to);
+			else {
+				index = to;
+				place();
+				settle();
 			}
-
-			closest?.setAttribute("data-row-active", "");
 		};
+		viewport.addEventListener("pointerup", release);
+		viewport.addEventListener("pointercancel", release);
 
-		window.addEventListener("scroll", update, { passive: true });
-		window.addEventListener("resize", update);
-		setTimeout(update, 50);
+		/* Capture phase, so the link never sees the click that ends a drag. */
+		viewport.addEventListener(
+			"click",
+			(event) => {
+				if (!dragged) return;
+				event.preventDefault();
+				event.stopPropagation();
+				dragged = false;
+			},
+			true,
+		);
+
+		/* Trackpad. preventDefault also stops a two-finger swipe from turning into
+		   the browser's back gesture. */
+		let wheelTotal = 0;
+		let wheelLocked = false;
+		let wheelReset = 0;
+
+		viewport.addEventListener(
+			"wheel",
+			(event) => {
+				if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
+				event.preventDefault();
+				if (wheelLocked) return;
+
+				wheelTotal += event.deltaX;
+				window.clearTimeout(wheelReset);
+				wheelReset = window.setTimeout(() => (wheelTotal = 0), 160);
+				if (Math.abs(wheelTotal) < 40) return;
+
+				const to = index + (wheelTotal > 0 ? 1 : -1);
+				wheelTotal = 0;
+				wheelLocked = true;
+				window.setTimeout(() => (wheelLocked = false), 800);
+				if (to >= 0 && to < count) go(to);
+			},
+			{ passive: false },
+		);
 	}
 </script>

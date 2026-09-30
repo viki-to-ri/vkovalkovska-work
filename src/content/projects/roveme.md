@@ -1,14 +1,18 @@
 ---
 title: "rove.me"
-order: 3
+order: 4
 tag: "retention, engagement"
-description: "As part of a cross-functional team, I helped increase unique visitors by 23%, returning visitors by 17% and bookings by 14% through a sequence of experiments spanning content, design and SEO optimisations."
+description: "Helped increase unique visitors by 23%, returning visitors by 17% and bookings by 14% through experiments spanning content, design and SEO."
 years: "2019–20"
 premise: "Improving retention & content discoverability."
 meta:
   - "product designer"
   - "jul 2019 – may 2020"
   - "figma, google analytics, hotjar"
+# A desktop-only browser mock on a purple ground.
+cover: "../../assets/roveme/roveme-cover.webp"
+coverAlt: "rove.me homepage on desktop: vacation ideas by season with recommended destinations"
+coverRatio: "16 / 9"
 metrics:
   - value: "+23%"
     label: "unique visitors"
@@ -60,6 +64,6 @@ details:
       - "Dynamic graph tooltip A/B test increased pages per session by 12%"
       - "Validated approach to feature discovery, informing future site enhancements"
 screens:
-  - caption: "homepage (desktop)"
+  - caption: "homepage, desktop"
   - caption: "destination graph tooltip"
 ---

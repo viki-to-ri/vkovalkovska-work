@@ -3,6 +3,8 @@ import type { CollectionEntry } from "astro:content";
 import Base from "./Base.astro";
 import Frame from "../components/Frame.astro";
 import Zoomable from "../components/Zoomable.astro";
+import CoverPreload from "../components/CoverPreload.astro";
+import { COLUMN_SIZES, COLUMN_WIDTHS, SPLIT_SIZES, SPLIT_WIDTHS } from "../lib/images";
 
 interface Props {
 	project: CollectionEntry<"projects">;
@@ -26,16 +28,13 @@ const galleryCount =
 	(hasPageFigure ? 1 : 0) +
 	p.figures.reduce((count, figure) => count + figure.imgs.length, 0);
 
-/* The column is 760px, so the figures ask for 2x that and the narrow guide-page
-   column for 2x 420px. Each list is capped at the source width in Zoomable. */
-const FIGURE_SIZES = "(max-width: 600px) 100vw, 760px";
-const FIGURE_WIDTHS = [760, 1520, 1800];
-const SPLIT_SIZES = "(max-width: 600px) 100vw, 420px";
-const SPLIT_WIDTHS = [420, 840, 1400];
 ---
 
 <Base page="case" title={p.title} description={p.premise}>
-	<a class="back chip" href="/">← work</a>
+	{/* Home, with the slider already on this case and the Selected work heading at
+	    the top of the viewport. The query is read by the slider script; the
+	    fragment does the scrolling, natively. */}
+	<a class="back chip" href={`/?work=${project.id}#selected-work`}>← back</a>
 
 	<h1 class="case-title">{p.title}</h1>
 	<p class="case-premise">{p.premise}</p>
@@ -54,8 +53,8 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 				style={`--cover-ratio: ${p.coverRatio}`}
 				src={p.cover}
 				alt={p.coverAlt ?? ""}
-				widths={FIGURE_WIDTHS}
-				sizes={FIGURE_SIZES}
+				widths={COLUMN_WIDTHS}
+				sizes={COLUMN_SIZES}
 				eager
 			/>
 		) : (
@@ -142,15 +141,15 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 							<figcaption>
 								<span class="fig-kicker">{figure.kicker}</span>
 								{figure.title && <span class="fig-title">{figure.title}</span>}
-								<span class="fig-caption">{figure.caption}</span>
+								{figure.caption && <span class="fig-caption">{figure.caption}</span>}
 							</figcaption>
 							<div class:list={["fig-images", { "fig-images--stacked": figure.stacked }]}>
 								{figure.imgs.map((img) => (
 									<Zoomable
 										src={img.src}
 										alt={img.alt}
-										widths={FIGURE_WIDTHS}
-										sizes={FIGURE_SIZES}
+										widths={COLUMN_WIDTHS}
+										sizes={COLUMN_SIZES}
 									/>
 								))}
 							</div>
@@ -162,12 +161,12 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 			p.screens.length > 0 && (
 				<section class="section">
 					<span class="label">Selected screens</span>
+					{/* Exact copy — lowercase, with the "!". The label inside each frame is
+					    the only caption; the second one underneath was dropped. */}
+					<p class="screens-note">screens are to be added soon!</p>
 					<div class="screens">
 						{p.screens.map((screen) => (
-							<figure>
-								<Frame placeholder={screen.caption} variant="screen" width={372} />
-								<figcaption class="screen-caption">{screen.caption}</figcaption>
-							</figure>
+							<Frame placeholder={screen.caption} variant="screen" width={372} />
 						))}
 					</div>
 				</section>
@@ -175,7 +174,9 @@ const SPLIT_WIDTHS = [420, 840, 1400];
 		)
 	}
 
-	{/* No rule above this, no "all work" link (the header nav covers that) and no
+	<CoverPreload />
+
+	{/* No rule above this, no "all work" link (← back covers that) and no
 	    contact line (the global footer carries it). Only the project name and its
 	    arrow are underlined, never the word "next:". */}
 	{

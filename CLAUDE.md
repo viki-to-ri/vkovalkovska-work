@@ -42,8 +42,9 @@ Two documents in `resources/`, and they split by concern:
 
 `BUILD-SPEC.md` §8 lists what was tried and deliberately reverted. Before
 "improving" something, check it isn't on that list. A later handoff can *un*-reject
-an entry — the before/after comparison block came back that way on 2026-09-23 —
-but only the handoff gets to do that. Most likely to be reintroduced by accident: a third colour mode, tonal hierarchy (lighter blues for
+an entry — the before/after comparison block came back that way on 2026-09-23,
+and on 2026-09-30 the work list became a slider and the "work" nav link and
+every case-image border went — but only the handoff gets to do that. Most likely to be reintroduced by accident: a third colour mode, tonal hierarchy (lighter blues for
 secondary text), numbering on the work or playlist lists, a filled active state
 on the current nav link, a sticky header, a rule above either footer, and a
 per-page contact block or a "have questions?" line in the
@@ -93,14 +94,16 @@ renders through `src/layouts/CaseStudy.astro`, so a new piece of case content
 means a new zod field first, then a change to that layout — never body Markdown.
 
 "Selected screens" has two shapes, chosen by the data. A case with `figures`
-renders the real figure layout — a stacked list with the caption *above* the
-images, led by a sticky-caption split for a full-page shot when the case also has
+renders the real figure layout — a stacked list with the kicker (and the
+caption, when a figure has one) *above* the images, led by a sticky-caption split for a full-page shot when the case also has
 a `pageFigure` (komoot only). A case with no figures falls back to the 4:3
 placeholder grid built from `screens`. komoot and Verizon have imagery today.
 A figure is one `src`/`alt` or several `imgs` under one kicker; the schema
 normalises both to `imgs`, which sit side by side unless `stacked: true`.
 `pageFigure.title` and `figures[].title` are carried in the frontmatter but
 deliberately never rendered; both title lines were removed on purpose.
+`figures[].caption` is optional and every one is commented out in the
+frontmatter for now — the author isn't using them yet. Don't delete them.
 
 The cover renders at the case's `coverRatio` (default `5 / 3`; Verizon sets
 `16 / 9` because its source is exactly that and 5:3 crops the phones).
@@ -149,22 +152,31 @@ second styling mechanism.
 
 Things that look like bugs but aren't:
 
-- **Two hover idioms, on purpose.** Selected-work rows invert (solid `--link`
-  fill, all descendants `--hover-ink`). Playlist rows and `<details>` summaries
-  do the opposite: text and both rules go `--link`, no fill. Nav and inline links
-  take a `--link` chip.
+- **Hover idioms differ on purpose.** A Selected work card zooms its cover 3% and
+  turns its name `--link`; its "read case study →" has no hover of its own.
+  Playlist rows and `<details>` summaries turn text and both rules `--link`, no
+  fill. Nav and inline links take a `--link` chip.
 - **Transparent top borders plus `margin-top: -1px`** on rows and `<details>` let
   an element light its own top rule without shifting layout, and collapse
   adjacent rules to 1px. Removing either breaks the other.
 - **The footer is pushed down by `main`, not by anything of its own.** `.page` is
   a `min-height: 100vh` flex column, `main` is `flex: 1 0 auto` with
-  `padding-bottom: 96px` as the floor. On a short page the footer sits at the
+  `padding-bottom: 96px` as the floor (48px on home). On a short page the footer sits at the
   bottom of the viewport; on a long one it scrolls with the page. No
   `position: fixed/sticky`, no `margin-top: auto` on the footer, `100vh` not
   `100dvh`.
-- **The work-rows wrapper carries a mirrored `-20px` margin and `20px` padding**
-  so its `border-top` spans the same width as the rows' bleeding
-  `border-bottom`. Drop it and the top rule is visibly 40px short.
+- **The slider viewport carries a mirrored `-9px` margin and `9px` padding.**
+  Its `overflow: hidden` would otherwise clip the card's focus ring, which sits
+  8px outside the card. The 40px card gap keeps the neighbour out of that 9px.
+- **Slider cards are all as tall as the tallest one** (the rail is a flex row),
+  so the rule under the slider doesn't jump between cards.
+- **Mobile card meta flattens with `display: contents`** so name/years, tag,
+  summary and CTA share one grid and every card lays out identically. A tag left
+  inline beside a long name wrapped differently per card.
+- **"← back" is `/?work=<id>#selected-work`.** The slider script reads the query
+  and jumps to that card; the fragment scrolls natively. On a page too short to
+  scroll further the heading stops short of the top — that is the scroll limit,
+  not a bug.
 - **The metrics grid is a seam construction** — the container's background shows
   through a 1px `gap` to draw the lines. Cells take no border and must stay
   opaque.
@@ -182,13 +194,26 @@ Things that look like bugs but aren't:
 - `--accent` and `--hover-tint` are defined per mode but currently unread. They
   are part of the documented palette; leave them.
 
-Client JS is four inlined scripts and nothing else: the pre-paint mode restore
-in `Base.astro`, the toggle handler in `SiteHeader.astro`, the mobile active-row
-tracker in `index.astro` (home only), and the lightbox in `CaseStudy.astro`. The
-lightbox script ships on every case page but no-ops on the ones with no overlay in
-the markup, which is every case without a cover or figures. Its gallery is every
-`.zoom` trigger in document order, so ←/→ follow the page. The build emits no JS chunks — keep it
-that way unless there's a reason not to.
+Client JS is five inlined scripts and nothing else: the pre-paint mode restore
+in `Base.astro`, the toggle handler in `SiteHeader.astro`, the Selected work
+slider in `index.astro` (home only), the lightbox in `CaseStudy.astro`, and the
+cover preloader in `CoverPreload.astro` (home and case pages). The lightbox
+script no-ops on a case with no overlay in the markup (no cover and no figures —
+none today). Its gallery is every `.zoom` trigger in document order, so ←/→
+follow the page. The build emits no JS chunks — keep it that way unless there's
+a reason not to.
+
+The preloader warms every case cover ~600ms after load so opening a case never
+shows an empty frame. It builds each srcset with the same `COLUMN_WIDTHS` /
+`COLUMN_SIZES` / `IMAGE_QUALITY` (`src/lib/images.ts`) as the case cover and the
+slider card — change one and the preload warms files nobody requests.
+
+Those widths are deliberate: 696 and 1392 are exactly 1× and 2× of the column's
+rendered width (760 less its padding), 1050 is ~3× a 350px phone column, so no
+image is rescaled by an odd fraction in the browser. Quality is 90 because the
+sources are already lossy WebP; sharp's default 80 smeared diagram lines and
+small UI text. Don't "round" the widths back to 760/1520. The case cover also
+decodes `sync`; `async` left a blank frame on switch.
 
 ## Fonts
 

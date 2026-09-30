@@ -1,0 +1,50 @@
+---
+import { getImage } from "astro:assets";
+import { getProjects } from "../lib/projects";
+import { COLUMN_SIZES, IMAGE_QUALITY, widthsFor } from "../lib/images";
+
+/* Warms every case cover so opening a case never shows an empty cover frame.
+   The srcset is built exactly as the case page builds its own — same widths,
+   sizes and quality — so the browser picks the very file the case page will ask for
+   and finds it cached. Rendered on home and on every case page. */
+const covers = await Promise.all(
+	(await getProjects())
+		.map((project) => project.data.cover)
+		.filter((cover): cover is ImageMetadata => Boolean(cover))
+		.map(async (cover) => {
+			const image = await getImage({
+				src: cover,
+				widths: widthsFor(cover),
+				sizes: COLUMN_SIZES,
+				quality: IMAGE_QUALITY,
+			});
+			return { src: image.src, srcset: image.srcSet.attribute };
+		}),
+);
+---
+
+<script type="application/json" id="cover-preload" set:html={JSON.stringify({ sizes: COLUMN_SIZES, covers })} />
+
+<script>
+	/* After first load settles, so it never competes with the page's own images. */
+	const data = document.getElementById("cover-preload")?.textContent;
+
+	if (data) {
+		const { sizes, covers } = JSON.parse(data) as {
+			sizes: string;
+			covers: { src: string; srcset: string }[];
+		};
+
+		const warm = () => {
+			for (const cover of covers) {
+				const img = new Image();
+				img.sizes = sizes;
+				img.srcset = cover.srcset;
+				img.src = cover.src;
+			}
+		};
+
+		if (document.readyState === "complete") setTimeout(warm, 600);
+		else window.addEventListener("load", () => setTimeout(warm, 600), { once: true });
+	}
+</script>

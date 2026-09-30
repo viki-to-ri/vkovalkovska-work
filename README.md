@@ -2,7 +2,7 @@
 
 Portfolio site for Viki Kovalkovska, product designer. Built to the spec in
 [`resources/BUILD-SPEC.md`](resources/BUILD-SPEC.md) — a single 760px column, two
-colour modes, and four case studies behind an unnumbered index.
+colour modes, and four case studies in a one-card-per-frame slider on the home page.
 
 `BUILD-SPEC.md` governs *how it looks and behaves* and supersedes the design half
 of [`resources/HANDOFF.md`](resources/HANDOFF.md); HANDOFF is still the source
@@ -26,11 +26,13 @@ emitted as separate files — the build produces no client JS chunks:
 | :----- | :---- | :------ |
 | Restore the stored mode before first paint | inline in `<head>`, `Base.astro` | every page |
 | Mode toggle click handler | `SiteHeader.astro` | every page |
-| Scroll-driven active row (touch stand-in for hover) | `index.astro` | home only |
+| Selected work slider (chevrons, drag, trackpad swipe) | `index.astro` | home only |
 | Click-to-magnify lightbox | `CaseStudy.astro` | case studies |
+| Cover preloader (no empty cover when opening a case) | `CoverPreload.astro` | home and case studies |
 
 The lightbox script ships on every case page but no-ops where the markup has no
-overlay, which today is every case but komoot. Nothing else is interactive.
+overlay. Every case has a cover now, so today it runs on all four. Nothing else
+is interactive.
 
 **Node 22+ is required** — wrangler refuses to start below it.
 
@@ -63,10 +65,12 @@ Slugs come from the Markdown filename: `roveme.md` → `/work/roveme/`. The spec
 fixes these at `komoot`, `verizon`, `roveme` and `podguides`, so renaming a file
 changes a published URL.
 
-The **"work" nav link is not a plain page link**: it points at
-`/#selected-work`, so it lands on the home page scrolled with the Selected work
-heading flush at the top of the viewport. That is a plain fragment, handled
-natively — there is no scroll script. The name/logo link goes to `/` instead.
+There is **no "work" nav link** — the header carries about, playlist and the mode
+toggle, and the name goes to the top of `/`. A case's **"← back"** links to
+`/?work=<slug>#selected-work`: the slider script reads the query and opens on
+that case's card with no animation, and the fragment scrolls the Selected work
+heading to the top of the viewport natively (as far as the page is tall enough
+to scroll).
 
 ## Structure
 
@@ -80,8 +84,8 @@ src/
   components/
     SiteHeader.astro         name, nav, mode toggle (+ its client script)
     SiteFooter.astro         contact copy, email/LinkedIn, the © line
-    WorkRow.astro            one row on the home index
     Frame.astro              cover/screen placeholder ground
+    CoverPreload.astro       warms every case cover after load
     Zoomable.astro           a real image, wrapped as a lightbox trigger
   data/
     playlist.ts              books + Goodreads search helper
@@ -89,7 +93,8 @@ src/
   lib/
     site.ts                  title, description, email, LinkedIn, shared copy
     projects.ts              ordering + next-case cycling
-  assets/komoot/             case imagery, emitted as a srcset at build time
+    images.ts                shared srcset widths + sizes for column-wide images
+  assets/<case>/             case imagery, emitted as a srcset at build time
   styles/global.css          modes, tokens, reset, every component style
 public/fonts/                self-hosted Söhne woff2
 resources/                   build spec + handoff (font downloads are gitignored)
@@ -110,8 +115,8 @@ Each case study is one Markdown file in `src/content/projects/`. The frontmatter
 | :----------------- | :------- | :------------------------------------------------------------- |
 | `title`            | yes      | e.g. `"Verizon SideView"`                                       |
 | `order`            | yes      | Index order **and** the next-case loop — not the date           |
-| `tag`              | yes      | Mono line beside the title on the index row                     |
-| `description`      | yes      | The one outcome-line on the index row                           |
+| `tag`              | yes      | Mono line beside the name on the Selected work card             |
+| `description`      | yes      | The summary on the case's Selected work card                    |
 | `years`            | yes      | Display string, e.g. `"2020–21"`                                |
 | `premise`          | yes      | The 20px line under the case title                              |
 | `meta`             | yes      | Array of strings — role, dates, tools; separated by a 26px gap  |
@@ -119,10 +124,11 @@ Each case study is one Markdown file in `src/content/projects/`. The frontmatter
 | `details`          | yes      | Array of `{ label, body?, bullets? }` — one `<details>` each    |
 | `metrics`          | no       | `{ value, label }` — the seam grid above the summary            |
 | `pageFigure`       | no       | `{ caption, alt, src, title? }` — the sticky-caption split      |
-| `figures`          | no       | `{ kicker, caption, alt, src, title? }` — the stacked list      |
+| `figures`          | no       | `{ kicker, caption?, title?, stacked? }` plus `src` + `alt`, or `imgs: [{ src, alt }]` — the figure list |
 | `screens`          | no       | `{ caption }` — one placeholder frame each                      |
-| `cover`            | no       | Relative path to an image; renders at 5:3, e.g. `"../../assets/komoot/komoot-cover.webp"` |
+| `cover`            | no       | Relative path to an image, e.g. `"../../assets/komoot/komoot-cover.webp"` |
 | `coverAlt`         | no       | Describe what the interface *does*, not "screenshot of X"       |
+| `coverRatio`       | no       | CSS aspect-ratio for the cover; defaults to `"5 / 3"`, Verizon uses `"16 / 9"` |
 | `coverPlaceholder` | no       | Caption shown when there's no cover; defaults to `cover image`  |
 | `draft`            | no       | Hidden in production builds, visible in `dev`                   |
 
@@ -134,12 +140,19 @@ to the first.
 rather than a phrase parsed back out of the prose, which is what the handoff
 asked a real CMS to do.
 
-**"Selected screens" has two shapes, chosen by the data.** Give a case a
-`pageFigure` and it renders the figure layout: a caption that stays pinned beside
-the full-length page shot, then the `figures` list with each caption *above* its
-image. Leave `pageFigure` out and it falls back to the 4:3 placeholder grid built
-from `screens`. The `title` on a `pageFigure` or a figure is carried but never
-rendered — both title lines were removed on purpose.
+**"Selected screens" has two shapes, chosen by the data.** Give a case `figures`
+and it renders the figure layout: a list with each kicker — and caption, if the
+figure has one — *above* its images. Captions are optional and currently all
+commented out in the frontmatter.
+Add a `pageFigure` too (komoot only) and the list is led by a caption that stays
+pinned beside a full-length page shot. With no `figures` it falls back to the
+4:3 placeholder grid built from `screens`. The `title` on a `pageFigure` or a
+figure is carried but never rendered — both title lines were removed on purpose.
+
+A figure holds one image (`src` + `alt`) or several (`imgs`) under a single
+kicker and caption. Several sit side by side, dropping to one column on a phone,
+unless `stacked: true` puts them in one column — Verizon's two phone sets do
+that.
 
 **Images** live in `src/assets/` and are imported through the schema's `image()`,
 so Astro emits a srcset at build time. Two things to keep in mind: an animated
@@ -172,28 +185,35 @@ will *get* (moon in day, sun in night), and its `aria-label`/`title` say so.
 ## Design notes
 
 - Border radius is `0` everywhere. No shadows, no gradients.
-- **Selected-work rows invert on hover**: solid `--link` fill, every descendant
-  flipped to `--hover-ink`. They bleed `20px` past the column on both sides so
-  the fill has padding around the text; the wrapper carries the mirrored margin
-  and padding so its `border-top` spans exactly the width of the rows' rules.
-- **Everything else hovers the other way.** Playlist rows and `<details>`
+- **Selected work is a one-card-per-frame slider.** ‹ › step to a neighbour with
+  a 620ms ease-out slide; wrapping from the last card to the first (or back)
+  fades out and in instead of sliding across every card. Cards drag with the
+  pointer (touch or mouse, rubber-banded at either end, advancing on 18% of the
+  width or a flick) and a horizontal trackpad swipe moves one card. None of
+  those wrap, and a drag never opens a case. Only the visible card is reachable
+  by Tab. Under `prefers-reduced-motion` every move is an instant jump and the
+  cover zoom is off.
+- **A card's hover** zooms its cover 3% and turns the name `--link`; "read case
+  study →" has no hover of its own. Covers have no border.
+- **Everything else hovers differently.** Playlist rows and `<details>`
   summaries turn their text and both rules `--link` with no fill; nav links and
   inline text links take a solid `--link` chip with `--hover-ink` text.
 - Rows and `<details>` carry a **transparent top border plus `margin-top: -1px`**
   so a hovered element can light its own top rule with no layout shift, and
   adjacent rules collapse to 1px instead of doubling.
-- **Touch has no hover**, so at ≤600px the home page marks the row nearest the
-  top third of the viewport with `data-row-active`, which triggers the same
-  inversion. Exactly one row is ever active — an IntersectionObserver band lit
-  several at once and was replaced by nearest-to-target. The bottom-of-page
-  clause is required, or the last row can never reach the line.
+- **On mobile every card's meta lays out the same** — name and year on one row,
+  then tag, summary at full width and the CTA. The wrappers flatten with
+  `display: contents` onto one grid; a tag left inline beside a long name
+  wrapped differently on each card.
 - The **metrics grid** is a seam construction — the container's background shows
   through a 1px `gap` to draw the lines. Cells carry no border and must stay
   opaque, or the container floods them.
 - **Image frames** use a 45° hatch at 4.5% neutral grey, which reads identically
-  in both modes. A case with a real cover skips the frame entirely.
+  in both modes, and keep their 1px border — they are placeholders. Real case
+  images carry no border at all.
 - **Real case images are lightbox triggers.** One click opens; a click anywhere
-  on the overlay or `Escape` closes. The overlay itself scrolls, so a tall image
+  on the overlay or `Escape` closes. `←`/`→` (keys or the on-screen buttons)
+  step through every image on the page in document order and wrap at both ends. The overlay itself scrolls, so a tall image
   can be read at full width. Its `<img>` is built in JS and never sits in the
   markup — an empty `src` there fired a failed request on every page load.
 - **The figure split needs `minmax(0, …)` on both columns**, or the tall
@@ -201,7 +221,7 @@ will *get* (moon in day, sun in night), and its `aria-label`/`title` say so.
 - `.page` is a `min-height: 100vh` flex column with `flex: 1 0 auto` and a 96px
   bottom padding on `main`, so the footer sits at the bottom of the viewport on
   short pages and scrolls away on long ones, never closer than 96px to the
-  content. Deliberately no `justify-content` and no `margin-top: auto` on the
+  content (48px on home, which closes tighter). Deliberately no `justify-content` and no `margin-top: auto` on the
   footer — either loses that floor.
 - Body copy and the contact paragraph share one `--measure` (578px) so their
   right edges line up despite different type sizes.
@@ -222,7 +242,7 @@ character set — `A–Z a–z 0–9 . , -` — and no OpenType features. Everyt
 falls back per glyph to `system-ui` / `ui-monospace`: apostrophes, `·`, `×`, `–`,
 `%`, `()`, `/`, `©`, and the arrows. That mismatch is most visible in the small
 mono labels, where the `·` separators come from a different face, and in the
-index rows' `➔` (U+2794), which renders lighter than intended.
+`→` arrows.
 
 Licensed retail cuts fix it with no code change — drop them into `public/fonts/`
 under these five names:
@@ -240,14 +260,10 @@ The trial download itself is gitignored rather than committed.
 
 ## Known gaps
 
-- **Three cases are still placeholders.** komoot has its own 5:3 cover and the
-  full figure layout; Verizon SideView, rove.me and PodGuides still render three
-  16:9 covers and six 4:3 screens as captioned frames. Drop new images into
-  `src/assets/`, set `cover:` for a cover, and add `pageFigure` + `figures` to
+- **Two cases have no screens yet.** Every case has a real cover, but rove.me
+  and PodGuides still show "screens are to be added soon!" above two labelled
+  4:3 placeholder frames. Drop images into `src/assets/` and add `figures` to
   move a case onto the figure layout.
-- **Screen captions render twice** on the placeholder cases — once inside the
-  frame as its placeholder text, once as the `<figcaption>` below it. The spec
-  doesn't say which should go. The figure layout doesn't have this problem.
 - **The komoot GIF ships as a GIF** (1.1 MB, lazy-loaded). The handoff suggested
   converting it to a muted looping `<video>` with a still poster and a
   `prefers-reduced-motion` fallback; that changes the markup away from the spec's

@@ -87,7 +87,7 @@ const projects = defineCollection({
 						.object({
 							kicker: z.string(),
 							title: z.string().optional(),
-							caption: z.string(),
+							caption: z.string().optional(), // unrendered when absent — kicker only
 							alt: z.string().optional(),
 							src: image().optional(),
 							imgs: z.array(z.object({ src: image(), alt: z.string() })).default([]),

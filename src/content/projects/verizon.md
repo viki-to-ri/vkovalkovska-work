@@ -1,8 +1,8 @@
 ---
 title: "Verizon SideView"
-order: 2
+order: 3
 tag: "0→1, cross-platform app"
-description: "Led the 0→1 design of a native cross-platform app that gives sales and support teams a unified view of contact and account data during calls, shipped across iOS, Android, macOS and Windows."
+description: "Led the 0→1 design of a native cross-platform app that gives sales and support teams a unified view of contact and account data during calls."
 years: "2020–21"
 premise: "Collaborative cross-platform app design."
 meta:
@@ -63,11 +63,13 @@ details:
 # purpose. The filenames run against the order: mobile-2 (navigation menu) goes
 # on top, under the one MOBILE kicker. "Sidecar" appears only inside the images;
 # page copy says SideView.
+# Figure captions are switched off for now — each figure shows its kicker only.
+# The text is kept below, commented out; uncomment a caption to bring it back.
 figures:
   - kicker: "mobile"
-    caption: >-
-      Examples of iOS app interfaces with navigation menu, business integrations,
-      call list, and others.
+    # caption: >-
+    #   Examples of iOS app interfaces with navigation menu, business integrations,
+    #   call list, and others.
     stacked: true
     imgs:
       - src: "../../assets/verizon/verizon-mobile-2.webp"
@@ -75,13 +77,13 @@ figures:
       - src: "../../assets/verizon/verizon-mobile-1.webp"
         alt: "Three phone screens: case details, contact search and feedback prompt"
   - kicker: "desktop"
-    caption: "Call list and contact details with Salesforce opportunity data on macOS."
+    # caption: "Call list and contact details with Salesforce opportunity data on macOS."
     alt: "Two macOS windows: call list and contact details with Salesforce data"
     src: "../../assets/verizon/verizon-desktop.webp"
   - kicker: "authentication & activation workflows"
-    caption: >-
-      BPMN diagrams for activating the app in tethered and standalone modes on
-      desktop and mobile.
+    # caption: >-
+    #   BPMN diagrams for activating the app in tethered and standalone modes on
+    #   desktop and mobile.
     alt: "BPMN diagrams of the authentication and activation workflows"
     src: "../../assets/verizon/verizon-flows.webp"
 ---

@@ -12,7 +12,7 @@ meta:
   - "product designer, acquisition (SEO) squad"
   - "jun 2024 – sep 2025"
   - "figma, dovetail"
-# Renders at the default 5:3 coverRatio. Verizon sets its own 16:9.
+# Renders at the default 5:3 coverRatio. The other three set 16:9.
 cover: "../../assets/komoot/komoot-cover.webp"
 coverAlt: "komoot Iceland hikes guide page shown in a browser window"
 # Four, in this order: the two squad-level YoY figures first, then the two
@@ -153,24 +153,26 @@ pageFigure:
     bringing in 36% and 45% of all web signups.
   alt: "Full-length komoot guide page for hikes in Iceland"
   src: "../../assets/komoot/komoot-guide-page.webp"
+# Figure captions are switched off for now — each figure shows its kicker only.
+# The text is kept below, commented out; uncomment a caption to bring it back.
 figures:
   - kicker: "before / after"
-    caption: >-
-      41% of all web signups came from this signup module at the end of the page.
-      We improved the old inline link by making it more visible and by showing the
-      content available after creating an account.
+    # caption: >-
+    #   41% of all web signups came from this signup module at the end of the page.
+    #   We improved the old inline link by making it more visible and by showing the
+    #   content available after creating an account.
     alt: "Side-by-side comparison of the komoot signup module before and after"
     src: "../../assets/komoot/komoot-before-after.webp"
   - kicker: "design variations"
-    caption: >-
-      Two signup module versions we tested for guide pages. Variation 1, leading
-      with the number of routes, brought in 12% more signups than the control.
+    # caption: >-
+    #   Two signup module versions we tested for guide pages. Variation 1, leading
+    #   with the number of routes, brought in 12% more signups than the control.
     alt: "Side-by-side comparison of signup banner variation 1 and variation 2"
     src: "../../assets/komoot/komoot-variants.webp"
   # Quoted on one line on purpose: this caption is the author's own edit and keeps
   # its double space before "which" and its straight apostrophe in "didn't".
   - kicker: "tour page sign up module"
-    caption: "Sign up module variant for tour pages  which we didn't ship in the end, showing the route details available after creating an account."
+    # caption: "Sign up module variant for tour pages  which we didn't ship in the end, showing the route details available after creating an account."
     alt: "Animated komoot tour page with a sign up module for waytypes, surfaces and tour profile"
     src: "../../assets/komoot/komoot-tour-surface.gif"
 ---

@@ -3,13 +3,9 @@ import { SITE_TITLE } from "../lib/site";
 
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 
-/* "work" is the one nav link that isn't a plain page link: it lands on the home
-   page scrolled so the Selected work heading sits flush at the top of the
-   viewport. A plain fragment does exactly that natively — the section's own
-   56px top padding is the only offset, which is what the spec asks for — so no
-   scroll script is needed. The name/logo link goes to the very top instead. */
+/* No "work" link — it was removed. The name goes to the top of home, and each
+   case's "← back" returns to its own card in the Selected work slider. */
 const nav = [
-	{ label: "work", href: "/#selected-work", current: path === "/" || path.startsWith("/work") },
 	{ label: "about", href: "/about", current: path === "/about" },
 	{ label: "playlist", href: "/playlist", current: path === "/playlist" },
 ];

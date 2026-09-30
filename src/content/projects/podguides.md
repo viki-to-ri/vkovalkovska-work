@@ -1,6 +1,6 @@
 ---
 title: "PodGuides"
-order: 4
+order: 2
 tag: "product concept, mvp"
 description: "Led 0→1 concept and MVP design exploring travel discovery through podcasts. Developed in collaboration with the iHeartMedia research team."
 years: "2021"
@@ -9,6 +9,9 @@ meta:
   - "product designer"
   - "jun – aug 2021"
   - "figma, usertesting"
+cover: "../../assets/podguides/podguides-cover.webp"
+coverAlt: "Three PodGuides phone screens: world map home, Best Outdoor Getaways and Mexico Ultimate Guide playlists"
+coverRatio: "16 / 9"
 summary: >-
   Led 0→1 concept and MVP design exploring travel discovery through podcasts.
   Developed in collaboration with the iHeartMedia research team.
@@ -44,5 +47,5 @@ details:
       future iterations.
 screens:
   - caption: "concept wireframes"
-  - caption: "destination guide (mobile)"
+  - caption: "destination guide, mobile"
 ---
