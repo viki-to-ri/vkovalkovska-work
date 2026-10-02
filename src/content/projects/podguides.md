@@ -1,7 +1,7 @@
 ---
 title: "PodGuides"
 order: 2
-tag: "product concept, mvp"
+tag: "0→1 concept & design"
 description: "Led 0→1 concept and MVP design exploring travel discovery through podcasts. Developed in collaboration with the iHeartMedia research team."
 years: "2021"
 premise: "Reimagining travel discovery through podcasts."

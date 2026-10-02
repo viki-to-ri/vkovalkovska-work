@@ -1,7 +1,7 @@
 ---
 title: "rove.me"
 order: 4
-tag: "retention, engagement"
+tag: "retention · engagement"
 description: "Helped increase unique visitors by 23%, returning visitors by 17% and bookings by 14% through experiments spanning content, design and SEO."
 years: "2019–20"
 premise: "Improving retention & content discoverability."
