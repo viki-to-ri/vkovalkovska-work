@@ -402,7 +402,7 @@ a:hover {
 	text-wrap: pretty;
 }
 
-.hero + .prose {
+.availability + .prose {
 	margin-top: 26px;
 }
 
