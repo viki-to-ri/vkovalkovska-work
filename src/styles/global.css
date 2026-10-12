@@ -223,7 +223,7 @@ a:hover {
 
 /* Vertical rhythm is carried by top padding on each block, never by margins that
    could collapse. Home opens tighter than the inner pages, and closes tighter
-   too: 48px above the footer instead of 96. */
+   too: 72px above the footer instead of 96. */
 .page > main {
 	flex: 1 0 auto;
 	padding-top: 88px;
@@ -232,7 +232,7 @@ a:hover {
 
 [data-page="home"] > .page > main {
 	padding-top: 52px;
-	padding-bottom: 48px;
+	padding-bottom: 72px;
 	animation: rise 400ms ease both;
 }
 
@@ -450,177 +450,143 @@ a:hover {
 
 /* ---------- selected work ---------- */
 
-/* One project per frame. The rail is a flex row of full-width cards 40px apart,
-   moved by a transform the slider script sets; the viewport clips it.
-
-   The viewport carries a mirrored 9px margin and padding: without the padding
-   its overflow clip would cut off the card's focus ring, which sits 8px outside
-   the card. The 40px gap keeps the neighbouring card out of that 9px. */
-.work > .label + .work-slider {
-	margin-top: 18px;
-}
-
-.work-viewport {
-	margin: -9px;
-	padding: 9px;
-	overflow: hidden;
-	touch-action: pan-y;
-	user-select: none;
-	-webkit-user-select: none;
-}
-
-.work-rail {
+/* Tabs over one card. The same layout at every width — no media queries. */
+.sw-head {
 	display: flex;
-	gap: 40px;
-	will-change: transform;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 12px;
+	margin-bottom: 18px;
+}
+
+.sw-head .label {
+	margin: 0;
+	font-weight: 400;
+}
+
+.sw-tabs {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 18px;
+}
+
+/* The transparent underline on unselected tabs keeps every tab the same height. */
+.sw-tab {
+	padding: 4px 0;
+	font-family: var(--font-mono);
+	font-size: 12px;
+	color: color-mix(in srgb, var(--ink) 55%, transparent);
+	border-bottom: 1px solid transparent;
 	transition:
-		transform 620ms var(--ease-out),
-		opacity 220ms ease;
+		color 200ms ease,
+		border-color 200ms ease;
 }
 
-/* While dragging, and for jumps: the rail follows the pointer or lands at once. */
-.work-rail.is-still {
-	transition: opacity 220ms ease;
+.sw-tab[aria-selected="true"] {
+	color: var(--ink);
+	border-bottom-color: var(--link);
 }
 
-.work-card,
-.work-card:hover {
-	flex: 0 0 100%;
-	min-width: 0;
+.sw-tab:hover {
+	color: var(--link);
+}
+
+.sw-card,
+.sw-card:hover {
 	display: flex;
 	flex-direction: column;
 	gap: 22px;
-	color: var(--ink);
+	color: var(--link);
 }
 
-.work-card:focus-visible {
+.sw-card:focus-visible {
 	outline: 1px solid var(--link);
 	outline-offset: 8px;
 }
 
-/* No border — the frame ground only shows until the image lands. No fixed
-   ratio either: each cover keeps its own proportions (komoot's is ≈5:3, the rest
-   16:9), so nothing is cropped. The img's width/height attributes reserve the
-   space before it loads. The rail stretches every card to the tallest, so the
-   rule under the slider stays put. */
-.work-cover {
+/* Every cover is stacked in one 16:9 frame and crossfades. No zoom, no progress
+   indicator. */
+.sw-cover {
+	position: relative;
+	aspect-ratio: 16 / 9;
 	overflow: hidden;
-	line-height: 0;
 	background: var(--frame);
 }
 
-/* A case with no cover yet keeps a 16:9 frame instead of collapsing. */
-.work-cover--empty {
-	aspect-ratio: 16 / 9;
-}
-
-.work-cover img {
+.sw-cover > * {
+	position: absolute;
+	inset: 0;
 	width: 100%;
-	height: auto;
-	transition: transform 600ms var(--ease-out);
+	height: 100%;
+	object-fit: cover;
+	opacity: 0;
+	transition: opacity 320ms ease;
 }
 
-.work-card:hover .work-cover img {
-	transform: scale(1.03);
+.sw-cover > .is-active {
+	opacity: 1;
 }
 
-.work-meta {
+/* All four metas share one cell, so the card keeps the tallest one's height and
+   nothing below it moves as the project changes. */
+.sw-metas {
+	display: grid;
+}
+
+.sw-meta {
+	grid-area: 1 / 1;
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
-	gap: 20px;
-	align-items: baseline;
+	column-gap: 20px;
+	row-gap: 10px;
+	visibility: hidden;
 }
 
-.work-main {
+.sw-meta.is-active {
+	visibility: visible;
+}
+
+.sw-head-line {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 4px;
 	min-width: 0;
 }
 
-.work-head {
-	display: flex;
-	align-items: baseline;
-	flex-wrap: wrap;
-	gap: 10px;
-}
-
-.work-name {
+.sw-name {
 	font-size: 18px;
 	font-weight: 500;
 	letter-spacing: -0.01em;
-	transition: color 200ms ease;
 }
 
-.work-card:hover .work-name {
-	color: var(--link);
-}
-
-.work-tag {
+.sw-tag {
 	font-family: var(--font-mono);
 	font-size: 11.5px;
-	color: var(--faint);
+	opacity: 0.75;
 }
 
-.work-summary {
-	font-size: 15.5px;
-	line-height: 1.6;
-	color: var(--dim);
-	max-width: 36em;
-	text-wrap: pretty;
-}
-
-/* No hover state of its own — removed on purpose; the whole card is the target. */
-.work-cta {
-	align-self: flex-start;
-	display: inline-flex;
-	gap: 6px;
-	margin: 4px -4px 0;
-	padding: 2px 4px;
+/* The 5px lines the mono years up with the 18px name. */
+.sw-years {
+	padding-top: 5px;
 	font-family: var(--font-mono);
 	font-size: 12px;
-	color: var(--link);
-}
-
-.work-years {
-	font-family: var(--font-mono);
-	font-size: 12px;
-	color: var(--faint);
+	text-align: right;
 	white-space: nowrap;
 }
 
-.work-footer {
-	display: flex;
-	justify-content: flex-end;
-	align-items: center;
-	gap: 14px;
-	margin-top: 20px;
-	padding-top: 12px;
-	border-top: 1px solid var(--line);
+.sw-overview {
+	font-size: 15.5px;
+	line-height: 1.6;
+	color: var(--dim);
+	max-width: 34em;
+	text-wrap: pretty;
+}
+
+.sw-arrow {
+	align-self: center;
+	justify-self: end;
 	font-family: var(--font-mono);
 	font-size: 12px;
-	color: var(--faint);
-}
-
-/* 40px hit areas; the negative margin pulls the glyphs back onto the rule and the
-   column edge. */
-.work-arrows {
-	display: flex;
-	margin: -10px -14px -10px -6px;
-}
-
-.work-arrows button {
-	width: 40px;
-	height: 40px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--ink);
-	transition: color 120ms ease;
-}
-
-.work-arrows button:hover {
-	color: var(--link);
 }
 
 /* ---------- playlist ---------- */
@@ -1238,51 +1204,6 @@ a:hover {
 		font-size: 26px;
 	}
 
-	/* Every card lays out the same, whatever its name or tag length: name and
-	   year on one row, then the tag, the summary at full width and the CTA. The
-	   wrappers flatten with display:contents so all four sit on one grid — a tag
-	   left inline next to a long name wrapped differently on each card. */
-	.work-meta {
-		column-gap: 16px;
-		row-gap: 0;
-	}
-
-	.work-main,
-	.work-head {
-		display: contents;
-	}
-
-	.work-name {
-		grid-column: 1;
-		grid-row: 1;
-	}
-
-	.work-years {
-		grid-column: 2;
-		grid-row: 1;
-		justify-self: end;
-	}
-
-	.work-tag {
-		grid-column: 1 / -1;
-		grid-row: 2;
-		margin-top: 6px;
-	}
-
-	.work-summary {
-		grid-column: 1 / -1;
-		grid-row: 3;
-		margin-top: 10px;
-		max-width: none;
-	}
-
-	.work-cta {
-		grid-column: 1 / -1;
-		grid-row: 4;
-		justify-self: start;
-		margin-top: 10px;
-	}
-
 	.row--flat {
 		grid-template-columns: 1fr;
 		gap: 4px;
@@ -1348,10 +1269,5 @@ a:hover {
 	*::after {
 		transition-duration: 1ms !important;
 		animation-duration: 1ms !important;
-	}
-
-	/* Collapsed to 1ms above, the zoom would just snap — drop it instead. */
-	.work-card:hover .work-cover img {
-		transform: none;
 	}
 }

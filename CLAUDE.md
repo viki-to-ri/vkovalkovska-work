@@ -44,7 +44,8 @@ Two documents in `resources/`, and they split by concern:
 "improving" something, check it isn't on that list. A later handoff can *un*-reject
 an entry — the before/after comparison block came back that way on 2026-09-23,
 and on 2026-09-30 the work list became a slider and the "work" nav link and
-every case-image border went — but only the handoff gets to do that. Most likely to be reintroduced by accident: a third colour mode, tonal hierarchy (lighter blues for
+every case-image border went, and on 2026-10-12 the slider became tabs over one
+auto-cycling card — but only the handoff gets to do that. Most likely to be reintroduced by accident: a third colour mode, tonal hierarchy (lighter blues for
 secondary text), numbering on the work or playlist lists, a filled active state
 on the current nav link, a sticky header, a rule above either footer, and a
 per-page contact block or a "have questions?" line in the
@@ -152,8 +153,9 @@ second styling mechanism.
 
 Things that look like bugs but aren't:
 
-- **Hover idioms differ on purpose.** A Selected work card zooms its cover 3% and
-  turns its name `--link`; its "read case study →" has no hover of its own.
+- **Hover idioms differ on purpose.** The Selected work card has no hover of its
+  own — name, tag, years and arrow are already `--link`; only its tabs turn
+  `--link` on hover.
   Playlist rows and `<details>` summaries turn text and both rules `--link`, no
   fill. Nav and inline links take a `--link` chip.
 - **Transparent top borders plus `margin-top: -1px`** on rows and `<details>` let
@@ -161,22 +163,23 @@ Things that look like bugs but aren't:
   adjacent rules to 1px. Removing either breaks the other.
 - **The footer is pushed down by `main`, not by anything of its own.** `.page` is
   a `min-height: 100vh` flex column, `main` is `flex: 1 0 auto` with
-  `padding-bottom: 96px` as the floor (48px on home). On a short page the footer sits at the
+  `padding-bottom: 96px` as the floor (72px on home). On a short page the footer sits at the
   bottom of the viewport; on a long one it scrolls with the page. No
   `position: fixed/sticky`, no `margin-top: auto` on the footer, `100vh` not
   `100dvh`.
-- **The slider viewport carries a mirrored `-9px` margin and `9px` padding.**
-  Its `overflow: hidden` would otherwise clip the card's focus ring, which sits
-  8px outside the card. The 40px card gap keeps the neighbour out of that 9px.
-- **Slider cards are all as tall as the tallest one** (the rail is a flex row),
-  so the rule under the slider doesn't jump between cards.
-- **Mobile card meta flattens with `display: contents`** so name/years, tag,
-  summary and CTA share one grid and every card lays out identically. A tag left
-  inline beside a long name wrapped differently per card.
-- **"← back" is `/?work=<id>#selected-work`.** The slider script reads the query
-  and jumps to that card; the fragment scrolls natively. On a page too short to
-  scroll further the heading stops short of the top — that is the scroll limit,
-  not a bug.
+- **Selected work stacks all four metas in one grid cell**, inactive ones
+  `visibility: hidden`, so the card keeps the tallest one's height and nothing
+  below it moves as the project changes. The covers stack the same way and
+  crossfade on `opacity`.
+- **Selected work only auto-cycles when it can be seen**: 4s idle, then 4s steps,
+  skipped unless more than 240px of the block is on screen (pixels, not an
+  IntersectionObserver ratio — the block is taller than a short laptop screen),
+  motion isn't reduced and the device can hover. The first tab click stops it
+  until reload.
+- **"← back" is `/?work=<id>#selected-work`.** The Selected work script reads the
+  query and selects that project without counting it as a click; the fragment
+  scrolls natively. On a page too short to scroll further the heading stops
+  short of the top — that is the scroll limit, not a bug.
 - **The metrics grid is a seam construction** — the container's background shows
   through a 1px `gap` to draw the lines. Cells take no border and must stay
   opaque.
@@ -196,7 +199,7 @@ Things that look like bugs but aren't:
 
 Client JS is five inlined scripts and nothing else: the pre-paint mode restore
 in `Base.astro`, the toggle handler in `SiteHeader.astro`, the Selected work
-slider in `index.astro` (home only), the lightbox in `CaseStudy.astro`, and the
+tabs and auto-cycle in `index.astro` (home only), the lightbox in `CaseStudy.astro`, and the
 cover preloader in `CoverPreload.astro` (home and case pages). The lightbox
 script no-ops on a case with no overlay in the markup (no cover and no figures —
 none today). Its gallery is every `.zoom` trigger in document order, so ←/→
@@ -206,7 +209,7 @@ a reason not to.
 The preloader warms every case cover ~600ms after load so opening a case never
 shows an empty frame. It builds each srcset with the same `COLUMN_WIDTHS` /
 `COLUMN_SIZES` / `IMAGE_QUALITY` (`src/lib/images.ts`) as the case cover and the
-slider card — change one and the preload warms files nobody requests.
+Selected work card — change one and the preload warms files nobody requests.
 
 Those widths are deliberate: 696 and 1392 are exactly 1× and 2× of the column's
 rendered width (760 less its padding), 1050 is ~3× a 350px phone column, so no

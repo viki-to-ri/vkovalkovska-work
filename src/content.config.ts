@@ -15,6 +15,7 @@ const projects = defineCollection({
 
 			// Index row on the home page.
 			tag: z.string(), // mono line under the title
+			tab: z.string().optional(), // its Selected work tab; the lowercased title when unset
 			description: z.string(), // the one outcome-line
 			years: z.string(), // "2024–25"
 

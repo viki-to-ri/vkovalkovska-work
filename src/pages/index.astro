@@ -7,7 +7,6 @@ import { COLUMN_SIZES, IMAGE_QUALITY, widthsFor } from "../lib/images";
 import { AVAILABILITY } from "../lib/site";
 
 const projects = await getProjects();
-const total = String(projects.length).padStart(2, "0");
 ---
 
 <Base page="home">
@@ -21,81 +20,77 @@ const total = String(projects.length).padStart(2, "0");
 		</p>
 	</div>
 
-	{/* One project per frame. The id is where a case page's "← back" lands. */}
-	<section class="section work" id="selected-work">
-		<span class="label">Selected work</span>
-
-		<div class="work-slider" role="region" aria-roledescription="carousel" aria-label="Selected work">
-			<div class="work-viewport" data-work-viewport>
-				<div class="work-rail" data-work-rail>
+	{/* Tabs over one card. The id is where a case page's "← back" lands. */}
+	<section class="section work" id="selected-work" data-selected-work-section>
+		<div class="sw" data-sw>
+			<div class="sw-head">
+				<h2 class="label">Selected work</h2>
+				<div class="sw-tabs" role="tablist" aria-label="Selected work">
 					{
 						projects.map((project, index) => (
-							<a
-								class="work-card"
-								href={`/work/${project.id}`}
-								data-work-card={project.id}
-								aria-label={`${project.data.title} case study`}
-								draggable="false"
+							<button
+								type="button"
+								role="tab"
+								class="sw-tab"
+								data-sw-tab={project.id}
+								aria-selected={index === 0 ? "true" : "false"}
+								aria-controls="sw-card"
 							>
-								<div class:list={["work-cover", { "work-cover--empty": !project.data.cover }]}>
-									{project.data.cover && (
-										<Image
-											src={project.data.cover}
-											alt={project.data.coverAlt ?? ""}
-											widths={widthsFor(project.data.cover)}
-											quality={IMAGE_QUALITY}
-											sizes={COLUMN_SIZES}
-											loading={index === 0 ? "eager" : "lazy"}
-											decoding="async"
-											draggable="false"
-										/>
-									)}
-								</div>
-								<div class="work-meta">
-									<div class="work-main">
-										<div class="work-head">
-											<span class="work-name">{project.data.title}</span>
-											<span class="work-tag">{project.data.tag}</span>
-										</div>
-										<p class="work-summary">{project.data.description}</p>
-										<span class="work-cta">
-											read case study <span>→</span>
-										</span>
-									</div>
-									<span class="work-years">{project.data.years}</span>
-								</div>
-							</a>
+								{project.data.tab ?? project.data.title.toLowerCase()}
+							</button>
 						))
 					}
 				</div>
 			</div>
 
-			{/* No dots, no progress bar, no "swipe" or "next →" text — all removed. */}
-			<div class="work-footer">
-				<span class="work-counter" data-work-counter aria-live="polite">01 / {total}</span>
-				<div class="work-arrows">
-					<button type="button" data-work-step="-1" aria-label="Previous project">
-						<svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true">
-							<path
-								d="M6 1 1 6l5 5"
-								stroke="currentColor"
-								stroke-width="1.2"
-								stroke-linecap="round"
-								stroke-linejoin="round"></path>
-						</svg>
-					</button>
-					<button type="button" data-work-step="1" aria-label="Next project">
-						<svg width="7" height="12" viewBox="0 0 7 12" fill="none" aria-hidden="true">
-							<path
-								d="M1 1l5 5-5 5"
-								stroke="currentColor"
-								stroke-width="1.2"
-								stroke-linecap="round"
-								stroke-linejoin="round"></path>
-						</svg>
-					</button>
+			<a
+				class="sw-card"
+				id="sw-card"
+				href={`/work/${projects[0].id}`}
+				aria-label={`${projects[0].data.title} case study`}
+				data-sw-card
+			>
+				{/* Every cover is in the markup, stacked; the active one fades in. */}
+				<div class="sw-cover">
+					{
+						projects.map((project, index) =>
+							project.data.cover ? (
+								<Image
+									src={project.data.cover}
+									alt={project.data.coverAlt ?? ""}
+									widths={widthsFor(project.data.cover)}
+									quality={IMAGE_QUALITY}
+									sizes={COLUMN_SIZES}
+									loading={index === 0 ? "eager" : "lazy"}
+									decoding="async"
+									class:list={{ "is-active": index === 0 }}
+									data-sw-panel={project.id}
+								/>
+							) : (
+								<span class:list={{ "is-active": index === 0 }} data-sw-panel={project.id} />
+							),
+						)
+					}
 				</div>
-			</div>
+
+				{/* All four share one grid cell, so the card is as tall as the longest
+				   overview and nothing below it moves when the project changes. */}
+				<div class="sw-metas">
+					{
+						projects.map((project, index) => (
+							<div class:list={["sw-meta", { "is-active": index === 0 }]} data-sw-panel={project.id}>
+								<div class="sw-head-line">
+									<span class="sw-name">{project.data.title}</span>
+									<span class="sw-tag">{project.data.tag}</span>
+								</div>
+								<span class="sw-years">{project.data.years}</span>
+								<p class="sw-overview">{project.data.description}</p>
+								<span class="sw-arrow" aria-hidden="true">→</span>
+							</div>
+						))
+					}
+				</div>
+			</a>
 		</div>
 	</section>
 
@@ -103,166 +98,99 @@ const total = String(projects.length).padStart(2, "0");
 </Base>
 
 <script>
-	/* The Selected work slider.
+	/* Selected work: tabs over one card, cycling on its own.
 
-	   - Chevrons: a neighbouring card slides; a wrap (last → first, first → last)
-	     fades out, jumps and fades back in, so it never slides across every card.
-	   - Pointer drag (touch and mouse): the axis is decided after 6px. Vertical is
-	     left to the page (`touch-action: pan-y`); horizontal follows the pointer
-	     1:1, rubber-banded ×0.3 past either end. It advances on 18% of the width or
-	     a 0.45px/ms flick, never wraps, and a drag never opens the card it began on.
-	   - Trackpad: horizontal wheel accumulates to 40px, moves one card, then locks
-	     for 800ms. Never wraps.
-	   - `?work=<id>` (the case pages' "← back") opens on that card with no motion. */
-	const viewport = document.querySelector<HTMLElement>("[data-work-viewport]");
-	const rail = document.querySelector<HTMLElement>("[data-work-rail]");
-	const counter = document.querySelector<HTMLElement>("[data-work-counter]");
+	   - A tab selects its project; the card's covers crossfade and its meta swaps.
+	   - Auto-cycle: 4s idle, then a step every 4s, wrapping. Hover or focus anywhere
+	     in the block pauses it; leaving restarts the idle wait. The first tab click
+	     stops it for the rest of the page's life.
+	   - A tick is skipped unless the page is visible, more than 240px of the block
+	     is on screen (pixels, not an IntersectionObserver ratio — the block is
+	     taller than a short laptop screen, so a ratio never fires), motion isn't
+	     reduced and the device can hover — no cycling on phones and tablets.
+	   - `?work=<id>` (the case pages' "← back") opens on that project without
+	     counting as a click. */
+	const root = document.querySelector<HTMLElement>("[data-sw]");
+	const card = document.querySelector<HTMLAnchorElement>("[data-sw-card]");
 
-	if (viewport && rail && counter) {
-		const cards = [...rail.querySelectorAll<HTMLAnchorElement>("[data-work-card]")];
-		const count = cards.length;
-		const pad = (n: number) => String(n).padStart(2, "0");
+	if (root && card) {
+		const tabs = [...root.querySelectorAll<HTMLButtonElement>("[data-sw-tab]")];
+		const ids = tabs.map((tab) => tab.dataset.swTab!);
+		const panels = [...root.querySelectorAll<HTMLElement>("[data-sw-panel]")];
+		const names = new Map(
+			[...root.querySelectorAll<HTMLElement>(".sw-meta")].map((meta) => [
+				meta.dataset.swPanel!,
+				meta.querySelector(".sw-name")!.textContent!,
+			]),
+		);
 		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const noHover = window.matchMedia("(hover: none)");
+		const STEP = 4000;
 		let index = 0;
+		let stopped = false;
+		let idle = 0;
+		let interval = 0;
 
-		/* `still` drops the transform transition, for drags and jumps. */
-		function place(dragPx = 0, still = false) {
-			rail!.classList.toggle("is-still", still);
-			rail!.style.transform = `translate3d(calc(${-index * 100}% - ${index * 40}px + ${dragPx}px), 0, 0)`;
-		}
-
-		function settle() {
-			counter!.textContent = `${pad(index + 1)} / ${pad(count)}`;
-			/* Only the visible card is reachable by Tab or a screen reader. */
-			cards.forEach((card, i) => (card.inert = i !== index));
-		}
-
-		function jump(to: number) {
+		function select(to: number) {
 			index = to;
-			place(0, true);
-			settle();
+			const id = ids[index];
+			tabs.forEach((tab, i) => tab.setAttribute("aria-selected", String(i === index)));
+			panels.forEach((panel) => panel.classList.toggle("is-active", panel.dataset.swPanel === id));
+			card!.href = `/work/${id}`;
+			card!.setAttribute("aria-label", `${names.get(id)} case study`);
 		}
 
-		function go(to: number) {
-			if (to >= 0 && to < count) {
-				if (reduceMotion.matches) return jump(to);
-				index = to;
-				place();
-				settle();
-				return;
-			}
-
-			const wrapped = (to + count) % count;
-			if (reduceMotion.matches) return jump(wrapped);
-
-			rail!.style.opacity = "0";
-			window.setTimeout(() => {
-				jump(wrapped);
-				requestAnimationFrame(() =>
-					requestAnimationFrame(() => {
-						rail!.classList.remove("is-still");
-						rail!.style.opacity = "1";
-					}),
-				);
-			}, 220);
+		function canStep() {
+			if (document.visibilityState !== "visible") return false;
+			if (reduceMotion.matches || noHover.matches) return false;
+			const rect = root!.getBoundingClientRect();
+			return Math.min(rect.bottom, window.innerHeight) - Math.max(rect.top, 0) > 240;
 		}
 
-		const start = cards.findIndex(
-			(card) => card.dataset.workCard === new URLSearchParams(location.search).get("work"),
+		function pause() {
+			window.clearTimeout(idle);
+			window.clearInterval(interval);
+		}
+
+		function resume() {
+			pause();
+			if (stopped) return;
+			idle = window.setTimeout(() => {
+				interval = window.setInterval(() => {
+					if (canStep()) select((index + 1) % ids.length);
+				}, STEP);
+			}, STEP);
+		}
+
+		tabs.forEach((tab, i) =>
+			tab.addEventListener("click", () => {
+				stopped = true;
+				pause();
+				select(i);
+			}),
 		);
-		jump(Math.max(0, start));
 
-		for (const button of document.querySelectorAll<HTMLButtonElement>("[data-work-step]")) {
-			button.addEventListener("click", () => go(index + Number(button.dataset.workStep)));
-		}
-
-		/* Drag. */
-		let drag: { id: number; x: number; y: number; t: number; dx: number; axis?: "x" | "y" } | null =
-			null;
-		let dragged = false;
-
-		viewport.addEventListener("pointerdown", (event) => {
-			if (event.pointerType === "mouse" && event.button !== 0) return;
-			drag = { id: event.pointerId, x: event.clientX, y: event.clientY, t: performance.now(), dx: 0 };
-			dragged = false;
+		/* Paused while either the pointer or focus is inside; resumes when both
+		   have left. Focus moving from tab to tab never counts as leaving. */
+		let hovered = false;
+		root.addEventListener("mouseenter", () => {
+			hovered = true;
+			pause();
+		});
+		root.addEventListener("mouseleave", () => {
+			hovered = false;
+			if (!root.contains(document.activeElement)) resume();
+		});
+		root.addEventListener("focusin", pause);
+		root.addEventListener("focusout", (event) => {
+			if (!hovered && !root.contains(event.relatedTarget as Node | null)) resume();
+		});
+		window.addEventListener("pagehide", pause);
+		window.addEventListener("pageshow", (event) => {
+			if (event.persisted) resume();
 		});
 
-		viewport.addEventListener("pointermove", (event) => {
-			if (!drag || drag.id !== event.pointerId) return;
-			const dx = event.clientX - drag.x;
-			const dy = event.clientY - drag.y;
-
-			if (!drag.axis) {
-				if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-				drag.axis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
-				if (drag.axis === "x") viewport.setPointerCapture(event.pointerId);
-			}
-			if (drag.axis !== "x") return;
-
-			dragged = true;
-			drag.dx = dx;
-			const atEdge = (index === 0 && dx > 0) || (index === count - 1 && dx < 0);
-			place(atEdge ? dx * 0.3 : dx, true);
-		});
-
-		const release = (event: PointerEvent) => {
-			const d = drag;
-			drag = null;
-			if (!d || d.id !== event.pointerId || d.axis !== "x") return;
-
-			const width = rail.offsetWidth || 1;
-			const velocity = d.dx / Math.max(1, performance.now() - d.t);
-			let to = index;
-			if ((d.dx < -width * 0.18 || velocity < -0.45) && index < count - 1) to++;
-			else if ((d.dx > width * 0.18 || velocity > 0.45) && index > 0) to--;
-
-			if (reduceMotion.matches) jump(to);
-			else {
-				index = to;
-				place();
-				settle();
-			}
-		};
-		viewport.addEventListener("pointerup", release);
-		viewport.addEventListener("pointercancel", release);
-
-		/* Capture phase, so the link never sees the click that ends a drag. */
-		viewport.addEventListener(
-			"click",
-			(event) => {
-				if (!dragged) return;
-				event.preventDefault();
-				event.stopPropagation();
-				dragged = false;
-			},
-			true,
-		);
-
-		/* Trackpad. preventDefault also stops a two-finger swipe from turning into
-		   the browser's back gesture. */
-		let wheelTotal = 0;
-		let wheelLocked = false;
-		let wheelReset = 0;
-
-		viewport.addEventListener(
-			"wheel",
-			(event) => {
-				if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
-				event.preventDefault();
-				if (wheelLocked) return;
-
-				wheelTotal += event.deltaX;
-				window.clearTimeout(wheelReset);
-				wheelReset = window.setTimeout(() => (wheelTotal = 0), 160);
-				if (Math.abs(wheelTotal) < 40) return;
-
-				const to = index + (wheelTotal > 0 ? 1 : -1);
-				wheelTotal = 0;
-				wheelLocked = true;
-				window.setTimeout(() => (wheelLocked = false), 800);
-				if (to >= 0 && to < count) go(to);
-			},
-			{ passive: false },
-		);
+		select(Math.max(0, ids.indexOf(new URLSearchParams(location.search).get("work") ?? "")));
+		resume();
 	}
 </script>

@@ -1,6 +1,6 @@
 /**
  * Widths, `sizes` and quality for every image drawn at the full column: case
- * covers, the home slider's cards and the figures. The slider, the case cover
+ * covers, the home Selected work card and the figures. That card, the case cover
  * and the cover preloader must all ask for the same srcset (quality included —
  * it changes the file name), or the preload warms files nobody requests.
  *
