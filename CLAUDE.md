@@ -163,7 +163,7 @@ Things that look like bugs but aren't:
   adjacent rules to 1px. Removing either breaks the other.
 - **The footer is pushed down by `main`, not by anything of its own.** `.page` is
   a `min-height: 100vh` flex column, `main` is `flex: 1 0 auto` with
-  `padding-bottom: 96px` as the floor (72px on home). On a short page the footer sits at the
+  `padding-bottom: 96px` as the floor, home included. On a short page the footer sits at the
   bottom of the viewport; on a long one it scrolls with the page. No
   `position: fixed/sticky`, no `margin-top: auto` on the footer, `100vh` not
   `100dvh`.

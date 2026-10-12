@@ -222,8 +222,8 @@ a:hover {
 }
 
 /* Vertical rhythm is carried by top padding on each block, never by margins that
-   could collapse. Home opens tighter than the inner pages, and closes tighter
-   too: 72px above the footer instead of 96. */
+   could collapse. Home opens tighter than the inner pages but closes with the
+   same 96px above the footer. */
 .page > main {
 	flex: 1 0 auto;
 	padding-top: 88px;
@@ -232,7 +232,6 @@ a:hover {
 
 [data-page="home"] > .page > main {
 	padding-top: 52px;
-	padding-bottom: 72px;
 	animation: rise 400ms ease both;
 }
 
@@ -406,8 +405,13 @@ a:hover {
 	margin-top: 26px;
 }
 
-[data-page="home"] .prose p {
-	line-height: 1.65;
+/* The home bio, a step up from prose. Qualified by .prose p so it outranks the
+   prose defaults; 24em at 26px wraps inside the 696px column. */
+.prose p[data-hero-bio] {
+	font-size: 26px;
+	line-height: 1.35;
+	letter-spacing: -0.01em;
+	max-width: 24em;
 }
 
 /* About and Playlist sit a step down from the home hero. */
@@ -1185,6 +1189,12 @@ a:hover {
 /* ---------- responsive ---------- */
 
 @media (max-width: 600px) {
+	.prose p[data-hero-bio] {
+		font-size: 22px;
+		line-height: 1.4;
+		max-width: none;
+	}
+
 	.page {
 		padding: 0 20px 32px;
 	}
