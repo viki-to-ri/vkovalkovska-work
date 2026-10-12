@@ -575,6 +575,7 @@ a:hover {
 }
 
 .sw-overview {
+	grid-column: 1 / -1;
 	font-size: 15.5px;
 	line-height: 1.6;
 	color: var(--dim);
@@ -582,11 +583,16 @@ a:hover {
 	text-wrap: pretty;
 }
 
-.sw-arrow {
-	align-self: center;
-	justify-self: end;
+/* A label, not a link of its own, and no hover — the whole card is the target.
+   The 4px plus the 10px row gap sets it 14px under the overview. */
+.sw-cta {
+	grid-column: 1 / -1;
+	display: inline-flex;
+	gap: 6px;
+	margin-top: 4px;
 	font-family: var(--font-mono);
 	font-size: 12px;
+	color: var(--link);
 }
 
 /* ---------- playlist ---------- */

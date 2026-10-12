@@ -154,7 +154,7 @@ second styling mechanism.
 Things that look like bugs but aren't:
 
 - **Hover idioms differ on purpose.** The Selected work card has no hover of its
-  own — name, tag, years and arrow are already `--link`; only its tabs turn
+  own — name, tag, years and "read case study →" are already `--link`; only its tabs turn
   `--link` on hover.
   Playlist rows and `<details>` summaries turn text and both rules `--link`, no
   fill. Nav and inline links take a `--link` chip.
